@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Production: Secure, Scalable MCP Servers in Python</title>
+<meta name="description" content="Stateless Model Context Protocol servers in Python that survive retries, replicas, OAuth and gateways. Spec 2026-07-28, 57 lessons, 14 local Docker labs.">
+<link rel="canonical" href="https://runsclean.com/courses/mcp-production/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="theme-color" content="#0d1117">
+<meta name="color-scheme" content="dark">
+<meta property="og:site_name" content="Runs Clean">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MCP Production: Build and Operate Reliable Servers">
+<meta property="og:description" content="Stateless Model Context Protocol servers in Python that survive retries, replicas, OAuth and gateways. Spec 2026-07-28, 57 lessons, 14 local Docker labs.">
+<meta property="og:url" content="https://runsclean.com/courses/mcp-production/">
+<meta property="og:image" content="https://runsclean.com/og/course-mcp-production.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MCP Production: Build and Operate Reliable Servers">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MCP Production: Build and Operate Reliable Servers">
+<meta name="twitter:description" content="Stateless Model Context Protocol servers in Python that survive retries, replicas, OAuth and gateways. Spec 2026-07-28, 57 lessons, 14 local Docker labs.">
+<meta name="twitter:image" content="https://runsclean.com/og/course-mcp-production.png">
+
+
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+
+<style> @font-face{font-family:"Inter";src:url("/fonts/inter.woff2") format("woff2-variations"),url("/fonts/inter.woff2") format("woff2");font-weight:100 900;font-display:swap}@font-face{font-family:"JetBrains Mono";src:url("/fonts/jetbrains-mono.woff2") format("woff2-variations"),url("/fonts/jetbrains-mono.woff2") format("woff2");font-weight:100 800;font-display:swap}:root{--ink:#0d1117;--ink-2:#0f141b;--deep:#0a0e14;--panel:#161b22;--line:#30363d;--hair:#21262d;--paper:#e6edf3;--text:#c9d1d9;--muted:#8b949e;--blue:#58a6ff;--green:#3fb950;--amber:#f0883e;--red:#f85149;--sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;--wrap:1200px;--gutter:clamp(20px,4vw,40px);--section:clamp(88px,11vw,152px);--radius:10px;color-scheme:dark}*,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:88px}@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}body{margin:0;background:var(--ink);color:var(--text);font:400 17px/1.65 var(--sans);font-feature-settings:"cv11","ss01";font-optical-sizing:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}img,svg{display:block;max-width:100%}a{color:inherit;text-decoration-color:rgba(88,166,255,.45);text-underline-offset:3px;text-decoration-thickness:1px}a:hover{color:var(--paper);text-decoration-color:var(--blue)}:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:4px}::selection{background:rgba(88,166,255,.32);color:var(--paper)}code,kbd,pre,.mono{font-family:var(--mono);font-size:.88em}:not(pre)>code{color:var(--paper);background:var(--panel);border:1px solid var(--hair);border-radius:5px;padding:.08em .38em;white-space:nowrap}strong{color:var(--paper);font-weight:600}hr{border:0;border-top:1px solid var(--hair);margin:0}.wrap{width:100%;max-width:calc(var(--wrap) + 2 * var(--gutter));margin:0 auto;padding:0 var(--gutter)}.skip{position:absolute;left:-9999px;top:12px;z-index:100;background:var(--paper);color:var(--ink);padding:8px 14px;border-radius:6px;font-weight:600}.skip:focus{left:12px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}h1,h2,h3,h4{color:var(--paper);font-weight:600;margin:0;text-wrap:balance}h1{font-size:clamp(42px,6.4vw,84px);line-height:1.02;letter-spacing:-0.042em;font-weight:640}h2{font-size:clamp(32px,4.1vw,54px);line-height:1.06;letter-spacing:-0.034em}h3{font-size:21px;line-height:1.3;letter-spacing:-0.012em}p{margin:0 0 1em;text-wrap:pretty}.lede{font-size:clamp(18px,1.55vw,21px);line-height:1.6;color:var(--text);max-width:44em}.eyebrow{display:flex;align-items:center;gap:12px;font:500 12.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 28px}.eyebrow::before{content:"";width:9px;height:9px;background:var(--blue);border-radius:2px;flex:none}.kicker{font:500 12.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin:0 0 18px}.muted{color:var(--muted)}.btn{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px;border-radius:8px;font:600 15.5px/1 var(--sans);letter-spacing:-0.005em;text-decoration:none;border:1px solid transparent;cursor:pointer;white-space:nowrap;transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease}.btn:active{transform:translateY(1px)}.btn-primary{background:var(--paper);color:var(--ink)}.btn-primary:hover{background:var(--paper);color:var(--ink)}.btn-ghost{border-color:var(--line);color:var(--paper);background:transparent}.btn-ghost:hover{border-color:var(--muted);color:var(--paper)}.btn .arrow{width:14px;height:14px;transition:transform .15s ease}.btn:hover .arrow{transform:translateX(2px)}.btn-small{height:36px;padding:0 14px;font-size:14px;border-radius:7px}.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}section{padding:var(--section) 0;position:relative}section.tight{padding:calc(var(--section) * .6) 0}.band{background:var(--ink-2);border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}.section-head{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;margin-bottom:clamp(44px,5vw,72px);max-width:820px}.section-head p{color:var(--text);font-size:18px;margin:0;max-width:40em}.section-num{font:500 12.5px/1 var(--mono);color:var(--muted);letter-spacing:.08em}.hero{padding:clamp(64px,9vw,128px) 0 clamp(72px,9vw,120px);overflow:hidden}.hero-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(40px,5vw,80px);align-items:center}.hero h1{margin-bottom:28px}.hero .lede{margin-bottom:40px}@media (max-width:980px){.hero-grid{grid-template-columns:minmax(0,1fr)}}.facts{display:flex;flex-wrap:wrap;gap:0;margin:44px 0 0;padding:0;list-style:none;border-top:1px solid var(--hair)}.facts li{padding:18px 28px 0 0;margin-right:28px;border-right:1px solid var(--hair)}.facts li:last-child{border-right:0;margin-right:0}.facts b{display:block;color:var(--paper);font-size:24px;font-weight:600;letter-spacing:-0.02em;line-height:1.2;font-variant-numeric:tabular-nums}.facts span{font:500 11.5px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}@media (max-width:560px){.facts li{border-right:0;width:50%;margin-right:0;padding-right:12px}}.term{position:relative;background:var(--deep);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 40px 80px -30px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.3);overflow:hidden}.term-bar{display:flex;align-items:center;gap:14px;height:40px;padding:0 16px;border-bottom:1px solid var(--hair);background:#0d1218}.term-bar .dots{display:flex;gap:7px}.term-bar .dots i{width:10px;height:10px;border-radius:50%;background:#2a3038;display:block}.term-bar .title{font:500 12px/1 var(--mono);color:var(--muted);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.term-body{padding:18px 20px 22px;font:400 12.6px/1.75 var(--mono);color:var(--text)}.term-body .row{display:grid;grid-template-columns:6ch minmax(0,1fr)}.term-body .gap{margin-top:1.75em}.term pre{margin:0;padding:18px 20px 22px;font:400 12.6px/1.75 var(--mono);color:var(--text);overflow-x:auto;white-space:pre}.term .prompt{color:var(--muted)}.term .cmd{color:var(--paper)}.term .pass{color:var(--green);font-weight:600}.term .fail{color:var(--red);font-weight:600}.term .sec{color:#6e7681}.term .ok{color:var(--paper);font-weight:600}.term .key{color:var(--blue)}.term .str{color:#a5d6ff}.term .num{color:var(--amber)}.term .cursor{display:inline-block;width:.6em;height:1.1em;vertical-align:-0.2em;background:var(--blue)}.term-caption{margin-top:14px;font:500 12px/1.5 var(--mono);color:var(--muted);letter-spacing:.02em}.replay .line{opacity:0}.replay.run .line{animation:line-in .01s linear forwards;animation-delay:calc(var(--i) * 95ms + 500ms)}@keyframes line-in{to{opacity:1}}@media (prefers-reduced-motion:reduce){.replay .line{opacity:1 !important;animation:none !important}}.cursor{animation:blink 1.1s steps(1) infinite}@keyframes blink{50%{opacity:0}}@media (prefers-reduced-motion:reduce){.cursor{animation:none}}.ledger{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--ink)}.ledger>div{padding:28px 26px 30px;border-right:1px solid var(--hair);position:relative}.ledger>div:last-child{border-right:0}.ledger .step{font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:22px;display:flex;justify-content:space-between}.ledger .step b{color:var(--blue);font-weight:500}.ledger h3{font-size:18px;margin-bottom:10px}.ledger p{font-size:15px;color:var(--text);margin:0 0 16px}.ledger .artifact{font:400 12px/1.6 var(--mono);color:var(--muted);background:var(--deep);border:1px solid var(--hair);border-radius:7px;padding:12px 13px;overflow-wrap:anywhere}.ledger .artifact em{font-style:normal;color:var(--paper)}.ledger .artifact .g{color:var(--green)}@media (max-width:980px){.ledger{grid-template-columns:repeat(2,minmax(0,1fr))}.ledger>div:nth-child(2){border-right:0}.ledger>div:nth-child(-n+2){border-bottom:1px solid var(--hair)}}@media (max-width:600px){.ledger{grid-template-columns:minmax(0,1fr)}.ledger>div{border-right:0;border-bottom:1px solid var(--hair)}.ledger>div:last-child{border-bottom:0}}.feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink-2)}.feature-copy{padding:clamp(32px,4.5vw,64px)}.feature-copy h3{font-size:clamp(28px,3vw,40px);letter-spacing:-0.03em;line-height:1.08;margin-bottom:18px}.feature-copy p{color:var(--text)}.feature-art{position:relative;border-left:1px solid var(--hair);background:radial-gradient(120% 90% at 85% 10%,rgba(88,166,255,.10),transparent 55%),var(--deep);display:flex;align-items:center;justify-content:center;padding:48px;min-height:380px}.feature-art .plate{width:min(360px,80%)}.feature-meta{list-style:none;padding:0;margin:26px 0 32px;display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;font-size:15px}.feature-meta li{display:flex;gap:10px;align-items:baseline;color:var(--text)}.feature-meta li::before{content:"";width:6px;height:6px;background:var(--blue);border-radius:1px;flex:none;transform:translateY(-2px)}@media (max-width:900px){.feature{grid-template-columns:minmax(0,1fr)}.feature-art{border-left:0;border-top:1px solid var(--hair);min-height:280px}}@media (max-width:480px){.feature-meta{grid-template-columns:1fr}}.split{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(40px,6vw,96px);align-items:start}.split .sticky{position:sticky;top:108px}@media (max-width:900px){.split{grid-template-columns:minmax(0,1fr)}.split .sticky{position:static}}.prose{font-size:18px}.prose p{margin-bottom:1.15em}.prose p:first-child::first-line{color:var(--paper)}.trace{border:1px solid var(--line);border-radius:12px;background:var(--deep);padding:28px 24px 22px;overflow-x:auto}.trace svg{min-width:560px}.trace svg{width:100%;height:auto}.trace text{font-family:var(--mono)}.trace-legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;font:500 11.5px/1.4 var(--mono);color:var(--muted)}.trace-legend span{display:inline-flex;align-items:center;gap:8px}.trace-legend i{width:14px;height:2px;display:inline-block}.labs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--hair)}.lab{display:grid;grid-template-columns:56px minmax(0,1fr);align-content:start;gap:4px 18px;padding:24px 28px 26px 0;border-bottom:1px solid var(--hair)}.labs .lab:nth-child(odd){border-right:1px solid var(--hair)}.labs .lab:nth-child(even){padding-left:28px;padding-right:0}.lab .n{font:500 13px/1.5 var(--mono);color:var(--blue);grid-row:span 2;padding-top:2px}.lab h3{font-size:17px}.lab h3 code{font-size:12px;color:var(--muted);background:none;border:0;padding:0;margin-left:8px;font-weight:400}.lab p{margin:0;font-size:15px;color:var(--text)}.lab.bonus .n{color:var(--amber)}@media (max-width:860px){.labs{grid-template-columns:minmax(0,1fr)}.labs .lab:nth-child(odd){border-right:0}.labs .lab:nth-child(even){padding-left:0}.lab h3 code{display:block;margin:2px 0 0}}.curriculum{border-top:1px solid var(--line)}.module{border-bottom:1px solid var(--hair)}.module summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:64px minmax(0,1fr) auto 24px;gap:18px;align-items:center;padding:22px 4px}.module summary::-webkit-details-marker{display:none}.module summary:hover h3{color:var(--paper)}.module .num{font:500 13px/1 var(--mono);color:var(--muted)}.module.bonus .num{color:var(--amber)}.module h3{font-size:19px;font-weight:560}.module .meta{font:400 12.5px/1 var(--mono);color:var(--muted);white-space:nowrap}.module .chev{width:16px;height:16px;color:var(--muted);transition:transform .2s ease;justify-self:end}.module[open] .chev{transform:rotate(45deg);color:var(--paper)}.module ol{list-style:none;margin:0 0 22px;padding:0 0 0 82px}.module li{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;padding:13px 0;border-top:1px dashed var(--hair);font-size:15.5px}.module li .id{font:400 12.5px/1.7 var(--mono);color:var(--muted)}.module li .t{color:var(--paper)}.module li .d{display:block;color:var(--muted);font-size:14px;margin-top:3px;line-height:1.55}.module li .m{font:400 12.5px/1.7 var(--mono);color:var(--muted);white-space:nowrap}.tag{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:4px 6px;border-radius:4px;vertical-align:2px;margin-left:8px}.tag-bonus{color:var(--amber);border:1px solid rgba(240,136,62,.4)}.tag-lab{color:var(--blue);border:1px solid rgba(88,166,255,.35)}@media (max-width:700px){.module summary{grid-template-columns:44px minmax(0,1fr) 20px}.module .meta{display:none}.module ol{padding-left:0}.module li{grid-template-columns:40px minmax(0,1fr)}.module li .m{display:none}}.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(40px,6vw,96px)}@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}.ticks{list-style:none;padding:0;margin:24px 0 0}.ticks li{position:relative;padding:14px 0 14px 30px;border-top:1px solid var(--hair);font-size:16px}.ticks li:last-child{border-bottom:1px solid var(--hair)}.ticks li::before{content:"";position:absolute;left:2px;top:23px;width:12px;height:7px;border-left:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(-45deg)}.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.notes>div{padding:30px 28px;border-right:1px solid var(--hair)}.notes>div:last-child{border-right:0}.notes h3{font-size:17px;margin-bottom:10px}.notes p{font-size:15px;margin:0}@media (max-width:900px){.notes{grid-template-columns:minmax(0,1fr)}.notes>div{border-right:0;border-bottom:1px solid var(--hair)}.notes>div:last-child{border-bottom:0}}.faq{border-top:1px solid var(--line);max-width:880px}.faq details{border-bottom:1px solid var(--hair)}.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:24px;padding:24px 0;color:var(--paper);font-size:18.5px;font-weight:560;letter-spacing:-0.01em}.faq summary::-webkit-details-marker{display:none}.faq summary .chev{width:16px;height:16px;color:var(--muted);flex:none;margin-top:6px;transition:transform .2s ease}.faq details[open] summary .chev{transform:rotate(45deg);color:var(--paper)}.faq details p{margin:-6px 0 26px;max-width:46em;color:var(--text)}.signup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(36px,5vw,72px);align-items:center;border:1px solid var(--line);border-radius:14px;padding:clamp(28px,4.5vw,64px);background:linear-gradient(180deg,rgba(88,166,255,.05),transparent 40%),var(--ink-2)}@media (max-width:900px){.signup{grid-template-columns:minmax(0,1fr)}}.signup h2{font-size:clamp(30px,3.4vw,44px);margin-bottom:16px}.form{display:grid;gap:14px}.form label.field{display:grid;gap:8px;font:500 12px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.form input[type=email]{height:52px;width:100%;padding:0 16px;border-radius:8px;border:1px solid var(--line);background:var(--deep);color:var(--paper);font:400 16.5px/1 var(--sans)}.form input[type=email]::placeholder{color:#57606a}.form input[type=email]:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(88,166,255,.18)}.consent{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;font-size:14px;line-height:1.55;color:var(--muted);cursor:pointer}.consent input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--blue)}.form .btn{width:100%;justify-content:center;height:52px}.form .fine{font-size:13px;color:var(--muted);margin:0}.form-pending{font:500 12px/1.5 var(--mono);color:var(--amber);border:1px dashed rgba(240,136,62,.5);border-radius:6px;padding:10px 12px}.sheet-preview{position:relative;aspect-ratio:210 / 297;max-width:420px;margin-left:auto;width:100%}.sheet-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:6px;box-shadow:0 30px 70px -25px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06)}.sheet-preview img.back{transform:translate(-7%,4%) rotate(-4deg);filter:brightness(.55)}.sheet-preview img.front{transform:rotate(1.5deg)}@media (max-width:900px){.sheet-preview{margin:0 auto;max-width:340px}}.article-head{padding:clamp(56px,8vw,110px) 0 clamp(40px,5vw,64px);border-bottom:1px solid var(--hair)}.article-head h1{font-size:clamp(38px,5.4vw,68px);max-width:15em;margin-bottom:26px}.byline{display:flex;flex-wrap:wrap;gap:8px 22px;font:500 12.5px/1.5 var(--mono);color:var(--muted);margin-top:30px}.byline span{display:inline-flex;gap:8px;align-items:center}.byline b{color:var(--paper);font-weight:500}.article{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(40px,6vw,88px);padding:clamp(48px,6vw,88px) 0 var(--section)}.toc{position:sticky;top:104px;align-self:start;font-size:14px}.toc p{font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}.toc ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--hair)}.toc li a{display:block;padding:7px 0 7px 16px;margin-left:-1px;border-left:1px solid transparent;text-decoration:none;color:var(--muted);line-height:1.4}.toc li a:hover{color:var(--paper);border-left-color:var(--line)}.toc li a.active{color:var(--paper);border-left-color:var(--blue)}@media (max-width:980px){.article{grid-template-columns:minmax(0,1fr)}.toc{display:none}}.doc{max-width:760px;font-size:17.5px}.doc h2{font-size:clamp(27px,2.8vw,36px);margin:72px 0 20px;scroll-margin-top:96px}.doc h2:first-child{margin-top:0}.doc h3{font-size:20px;margin:40px 0 12px}.doc .anchor{color:var(--muted);text-decoration:none;margin-left:10px;font-weight:400;opacity:0}.doc h2:hover .anchor{opacity:1}.doc ul,.doc ol{padding-left:1.3em;margin:0 0 1.2em}.doc li{margin-bottom:.45em}.doc li::marker{color:var(--muted)}.tldr{border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:0 var(--radius) var(--radius) 0;padding:22px 26px;background:var(--ink-2);margin:0 0 48px}.tldr p:last-child,.tldr ul:last-child{margin-bottom:0}.tldr .kicker{margin-bottom:10px}.callout{border:1px solid rgba(240,136,62,.35);background:rgba(240,136,62,.05);border-radius:var(--radius);padding:18px 22px;margin:28px 0;font-size:16px}.callout b{color:var(--amber);font-weight:600}.table{width:100%;overflow-x:auto;margin:26px 0 30px;border:1px solid var(--line);border-radius:var(--radius)}.table table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}.table th{text-align:left;font:500 11.5px/1.3 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--deep);padding:14px 16px;border-bottom:1px solid var(--line)}.table td{padding:14px 16px;border-bottom:1px solid var(--hair);vertical-align:top;line-height:1.55}.table tr:last-child td{border-bottom:0}.table td:first-child{color:var(--paper)}.table td.was{color:var(--muted)}.table code{font-size:12.5px;white-space:normal}pre.code{background:var(--deep);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;overflow-x:auto;font:400 13px/1.7 var(--mono);color:var(--text);margin:22px 0 28px}pre.code .c{color:#6e7681}pre.code .k{color:var(--blue)}pre.code .s{color:#a5d6ff}pre.code .h{color:var(--amber)}pre.code .hl{background:rgba(88,166,255,.10);display:inline-block;width:100%;margin:0 -20px;padding:0 20px;box-sizing:content-box}.code-label{font:500 11.5px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:28px 0 -12px}.sources{font-size:15px}.sources li{margin-bottom:.6em}.cta-final{text-align:left}.cta-final h2{max-width:14em;margin-bottom:22px}.cta-final p{max-width:38em;margin-bottom:36px;font-size:18px}.page{padding:clamp(56px,8vw,110px) 0 var(--section)}.page .doc h1{font-size:clamp(36px,5vw,60px);margin-bottom:22px}.center-page{min-height:62vh;display:flex;align-items:center}.center-page h1{font-size:clamp(40px,6vw,72px);margin-bottom:18px}.js .reveal{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}.js .reveal.in{opacity:1;transform:none}@media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none;transition:none}}@media print{.site-header,.site-footer,.toc,.signup,.skip{display:none !important}body{background:var(--paper);color:#111}}.nw{white-space:nowrap}.h-gap{margin:20px 0 26px}.h-gap-sm{margin:20px 0 8px}.h-gap-top{margin-top:20px}.split .prose{font-size:18px}.spacer{visibility:hidden}.hero-art{display:flex;justify-content:center}.hero-art svg{width:min(420px,86%);height:auto}@media (max-width:980px){.hero-art{display:none}}.course-list{display:grid;gap:28px}.feature{position:relative;transition:border-color .2s ease}.feature:hover{border-color:var(--muted)}.feature h3 a{text-decoration:none;color:inherit}.stretch::after{content:"";position:absolute;inset:0;z-index:1;border-radius:14px}.feature .actions .btn{pointer-events:none}.trace-steps,.trace-note{display:none}@media (max-width:700px){.trace{padding:22px 20px 20px;overflow:visible}.trace-wide,.trace-legend{display:none}.trace-steps{display:block;list-style:none;margin:0;padding:0;counter-reset:step}.trace-steps li{position:relative;padding:0 0 20px 34px;font-size:15px;line-height:1.5;color:var(--text);counter-increment:step}.trace-steps li::before{content:counter(step);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;border:1px solid var(--blue);color:var(--blue);font:500 11px/20px var(--mono);text-align:center}.trace-steps li::after{content:"";position:absolute;left:11px;top:26px;bottom:4px;width:1px;background:var(--hair)}.trace-steps li:last-child{padding-bottom:0}.trace-steps li:last-child::after{display:none}.trace-steps b{display:block;font:500 11.5px/1.4 var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}.trace-steps .ok::before{border-color:var(--green);color:var(--green)}.trace-steps .bad::before{border-color:var(--red);color:var(--red)}.trace-steps .warn::before{border-color:var(--amber);color:var(--amber)}.trace-steps .ok{color:var(--green)}.trace-steps .bad{color:var(--red)}.trace-steps .warn{color:var(--amber)}.trace-note{display:block;margin:20px 0 0;padding-top:16px;border-top:1px solid var(--hair);font:400 12.5px/1.6 var(--mono);color:var(--muted)}}.term-body .more{display:none}@media (max-width:600px){.term-body .extra{display:none}.term-body .more{display:block}.term-body{padding:16px 16px 18px;font-size:12px}.term-bar .title{font-size:11px}}@media (max-width:640px){:root{--section:76px}:not(pre)>code{white-space:normal;overflow-wrap:anywhere}h1{font-size:clamp(36px,10.4vw,48px);letter-spacing:-0.038em}h2{font-size:clamp(28px,8vw,36px)}.lede{font-size:17.5px}.hero{padding:44px 0 64px}.eyebrow{margin-bottom:20px}.actions .btn{width:100%;justify-content:center}.feature-copy{padding:28px 22px 30px}.feature-art{padding:36px;min-height:0}.feature-art .plate{width:min(260px,80%)}.signup{padding:28px 20px;border-radius:12px}.sheet-preview{max-width:260px;margin-top:8px}.notes>div{padding:24px 22px}.ledger>div{padding:24px 22px}.facts li{padding-top:16px}.facts b{font-size:21px}.module summary{padding:18px 2px;gap:12px}.module h3{font-size:17px}.faq summary{font-size:17px;padding:20px 0}.consent{padding:4px 0}.consent input{width:22px;height:22px;margin-top:0}.consent{grid-template-columns:24px minmax(0,1fr)}.byline{display:grid;gap:6px}.byline span{display:block}.article-head h1{font-size:clamp(34px,9.6vw,44px)}.doc{font-size:17px}.doc h2{margin-top:56px}.tldr{padding:20px 18px}pre.code{font-size:12px;padding:16px;margin-left:calc(-1 * var(--gutter) + 8px);margin-right:calc(-1 * var(--gutter) + 8px);border-radius:8px}pre.code .hl{margin:0 -16px;padding:0 16px}.table{border:0;overflow:visible}.table table{min-width:0;display:block}.table thead{display:none}.table tbody{display:grid;gap:12px}.table tr{display:block;border:1px solid var(--line);border-radius:var(--radius);padding:6px 16px;background:var(--ink-2)}.table td{display:block;border:0;padding:10px 0;border-bottom:1px dashed var(--hair)}.table td:last-child{border-bottom:0}.table td::before{content:attr(data-label);display:block;font:500 10.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}.table td:first-child{font-weight:560}}.announce{position:relative;z-index:51;background:var(--ink);border-bottom:1px solid var(--hair)}.announce a{display:flex;align-items:center;justify-content:center;gap:12px;min-height:40px;padding:8px 0;text-decoration:none;font-size:13.5px;color:var(--text)}.announce a:hover{color:var(--paper)}.announce-tag{font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink);background:var(--blue);padding:4px 7px 4px;border-radius:4px}.announce-cta{display:inline-flex;align-items:center;gap:6px;color:var(--paper);font-weight:560;white-space:nowrap;flex:none}.announce-tag{flex:none}.announce-cta .arrow{width:12px;height:12px;transition:transform .15s ease}.announce a:hover .arrow{transform:translateX(2px)}.announce a::before{content:"";position:absolute;inset:0;background:radial-gradient(40% 120% at 50% 0%,rgba(88,166,255,.10),transparent 70%);pointer-events:none}.site-header{position:sticky;top:0;z-index:50;background:rgba(13,17,23,.72);-webkit-backdrop-filter:saturate(180%) blur(16px);backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid transparent;transition:border-color .25s ease,background-color .25s ease}.site-header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;opacity:0;transition:opacity .25s ease;background:linear-gradient(90deg,transparent,rgba(88,166,255,.45) 30%,rgba(88,166,255,.45) 70%,transparent)}.site-header.scrolled{border-bottom-color:var(--hair);background:rgba(13,17,23,.86)}.site-header.scrolled::after{opacity:.55}.site-header .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:24px}.brand{display:inline-flex;align-items:center;text-decoration:none;color:var(--paper);padding:10px 0;border-radius:6px}.brand svg{height:21px;width:auto;transition:opacity .15s ease}.brand:hover svg{opacity:.85}.nav{display:flex;align-items:center;gap:18px;font-size:14px}.nav-links{display:flex;align-items:center;gap:2px;padding:4px;border:1px solid var(--hair);border-radius:999px;background:rgba(22,27,34,.55)}.nav-links a{position:relative;text-decoration:none;color:var(--muted);white-space:nowrap;padding:7px 14px;border-radius:999px;transition:color .15s ease,background-color .15s ease}.nav-links a:hover{color:var(--paper);background:rgba(255,255,255,.05)}.nav-links a[aria-current="page"]{color:var(--paper);background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}.nav-i{display:none}.nav .nav-cta{height:38px;padding:0 16px;border-radius:999px;font-size:14px}.nav .nav-cta .arrow{width:13px;height:13px}.m-only{display:none}.menu-btn{display:none}@media (max-width:860px){.announce a{font-size:13px;gap:10px}.announce-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}}@media (max-width:480px){.announce a{justify-content:flex-start}.announce-cta{margin-left:auto;font-size:0;gap:0}.announce-cta .arrow{width:14px;height:14px}}@media (max-width:760px){.site-header,.site-header.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--ink)}.site-header .wrap{height:60px}.js .menu-btn{display:inline-flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:6px;width:44px;height:44px;margin-right:-8px;padding:0 10px;background:none;border:0;cursor:pointer;color:var(--paper)}.menu-btn i{display:block;width:22px;height:1.6px;background:currentColor;border-radius:1px;transition:transform .25s cubic-bezier(.2,.7,.2,1),width .25s ease}.menu-btn i:last-of-type{width:15px}.menu-open .menu-btn i:first-of-type{transform:translateY(3.8px) rotate(45deg)}.menu-open .menu-btn i:last-of-type{width:22px;transform:translateY(-3.8px) rotate(-45deg)}.js .nav{position:fixed;left:0;right:0;top:60px;bottom:0;display:flex;flex-direction:column;align-items:stretch;gap:0;padding:8px var(--gutter) calc(28px + env(safe-area-inset-bottom));background:var(--ink);overflow-y:auto;overscroll-behavior:contain;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility 0s linear .2s}.js .menu-open .nav{visibility:visible;opacity:1;transition:opacity .2s ease}.js .nav-links{display:block;padding:0;border:0;background:none;border-radius:0}.js .nav-links a{display:flex;align-items:baseline;gap:16px;padding:18px 2px;border-radius:0;font-size:30px;font-weight:600;letter-spacing:-0.03em;color:var(--paper);border-bottom:1px solid var(--hair);background:none !important;box-shadow:none !important}.js .nav-links a[aria-current="page"]{color:var(--blue)}.js .nav-i{display:inline;font:500 12px/1 var(--mono);letter-spacing:.06em;color:var(--muted);transform:translateY(-4px)}.js .m-only{display:block}.nav-label{font:500 11.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}.nav-course{display:flex;align-items:center;gap:14px;padding:12px;margin:0 -12px;border-radius:12px;text-decoration:none;color:var(--paper)}.nav-course:active{background:var(--panel)}.nav-course-mark{width:46px;height:46px;flex:none;border:1px solid var(--line);border-radius:12px;overflow:hidden}.nav-course-mark svg{width:44px;height:44px;display:block}.nav-course b{display:block;font-size:16.5px;font-weight:600}.nav-course small{display:block;font:400 12.5px/1.5 var(--mono);color:var(--muted)}.js .nav .nav-cta{margin-top:auto;height:54px;justify-content:center;font-size:16px;border-radius:12px}.js .nav .nav-cta{margin-top:28px}.nav-foot{margin:18px 0 0;text-align:center;font:400 13px/1.5 var(--mono)}.nav-foot a{color:var(--muted);text-decoration:none}.js .nav>*{transform:translateY(8px);opacity:0;transition:transform .35s cubic-bezier(.2,.7,.2,1),opacity .35s ease}.js .nav-links a{transform:translateY(8px);opacity:0;transition:transform .35s cubic-bezier(.2,.7,.2,1),opacity .35s ease}.js .nav-links{transform:none;opacity:1}.js .menu-open .nav>*,.js .menu-open .nav-links a{transform:none;opacity:1}.js .menu-open .nav-links a:nth-child(1){transition-delay:.03s}.js .menu-open .nav-links a:nth-child(2){transition-delay:.07s}.js .menu-open .nav-links a:nth-child(3){transition-delay:.11s}.js .menu-open .nav-links a:nth-child(4){transition-delay:.15s}.js .menu-open .nav>.nav-courses{transition-delay:.18s}.js .menu-open .nav>.nav-cta{transition-delay:.22s}.js .menu-open .nav>.nav-foot{transition-delay:.25s}html:not(.js) .site-header .wrap{flex-wrap:wrap;height:auto;padding-top:10px;padding-bottom:10px}html:not(.js) .nav{flex-wrap:wrap;gap:8px}}@media (max-width:760px) and (prefers-reduced-motion:reduce){.js .nav>*,.js .nav-links a{transform:none !important;transition:none !important}}.menu-lock{overflow:hidden}.site-footer{position:relative;overflow:hidden;border-top:1px solid var(--hair);padding:clamp(64px,8vw,104px) 0 0;font-size:14.5px;color:var(--muted);background:radial-gradient(70% 60% at 50% 100%,rgba(88,166,255,.07),transparent 70%),var(--ink)}.foot-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(32px,6vw,96px);align-items:end;padding-bottom:clamp(48px,6vw,72px);border-bottom:1px solid var(--hair)}.foot-tagline{margin:0 0 16px;color:var(--paper);font-size:clamp(30px,4vw,52px);line-height:1.04;letter-spacing:-0.035em;font-weight:620;text-wrap:balance}.foot-sub{margin:0;max-width:34em;font-size:16px;color:var(--text)}.form-compact{gap:12px}.form-compact .field{display:block}.form-compact .field input{height:50px}.form-compact .consent{font-size:13px}@media (min-width:560px){.form-compact{grid-template-columns:minmax(0,1fr) auto}.form-compact .field,.form-compact .btn{grid-row:1}.form-compact .btn{width:auto;height:50px;padding:0 22px}.form-compact .consent{grid-column:1 / -1}}.foot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,1.3fr);gap:40px;padding:48px 0 8px}.foot-grid h4{font:500 11.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}.foot-grid ul{list-style:none;padding:0;margin:0;display:grid;gap:4px}.foot-grid a{display:inline-block;padding:5px 0;text-decoration:none;color:var(--text);transition:color .15s ease}.foot-grid a:hover{color:var(--paper)}.status-line{display:flex;align-items:center;gap:10px;margin:0 0 8px;font:500 15px/1 var(--mono);color:var(--paper)}.status-line .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(63,185,80,.15),0 0 14px rgba(63,185,80,.6)}@media (prefers-reduced-motion:no-preference){.status-line .dot{animation:pulse 2.4s ease-in-out infinite}}@keyframes pulse{50%{box-shadow:0 0 0 7px rgba(63,185,80,0),0 0 14px rgba(63,185,80,.3)}}.status-sub{margin:0;font-size:13.5px;line-height:1.6;max-width:28em}.foot-base{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:28px 0 0;margin-top:40px;border-top:1px solid var(--hair);font:400 12px/1.6 var(--mono)}.foot-giant{margin-top:clamp(28px,4vw,48px);height:clamp(56px,12.5vw,172px);overflow:hidden;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.65) 55%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,rgba(0,0,0,.65) 55%,transparent 100%)}.foot-giant svg{width:100%;height:auto;display:block}.foot-giant path{fill:#1c2430}.foot-giant rect{fill:var(--blue);opacity:.9}@media (max-width:900px){.foot-top{grid-template-columns:minmax(0,1fr);align-items:start}.foot-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px}.foot-status{grid-column:1 / -1;padding-top:24px;border-top:1px solid var(--hair)}}@media (max-width:760px){.site-footer{padding-bottom:76px}}.mobile-cta{display:none}@media (max-width:760px){.mobile-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:40;padding:10px 10px 10px 16px;border-radius:14px;background:rgba(22,27,34,.92);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 18px 40px -12px rgba(0,0,0,.7);transform:translateY(140%);transition:transform .35s cubic-bezier(.2,.7,.2,1)}.mobile-cta.show{transform:none}.mobile-cta b{display:block;color:var(--paper);font-size:14.5px;font-weight:600}.mobile-cta small{display:block;font:400 11.5px/1.4 var(--mono);color:var(--muted)}.mobile-cta .btn{height:42px;border-radius:10px;padding:0 16px}.menu-open ~ .mobile-cta{display:none}}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Course","@id":"https://runsclean.com/courses/mcp-production/#course","name":"MCP Production: Build and Operate Reliable Servers","description":"Stateless Model Context Protocol servers in Python that survive retries, replicas, OAuth and gateways. Spec 2026-07-28, 57 lessons, 14 local Docker labs.","url":"https://runsclean.com/courses/mcp-production/","provider":{"@id":"https://runsclean.com/#org"},"publisher":{"@id":"https://runsclean.com/#org"},"inLanguage":"en","educationalLevel":"Intermediate","isAccessibleForFree":false,"datePublished":"2026-10-11","image":"https://runsclean.com/og/course-mcp-production.png","teaches":["Build MCP request handlers in Python, compare them with a TypeScript implementation, and test discovery, capabilities, and error responses","Verify routing consistency and replica independence with requests through a local gateway","Design explicit handles with ownership, expiry, and idempotency tests","Implement an approval workflow with Multi Round-Trip Requests and replay rejection","Measure cache behavior and test caller isolation under a documented workload","Validate authorization boundaries using a local token flow and negative tests","Operate durable tasks through restarts and inspect per-tool telemetry","Plan a migration using compatibility fixtures, rollout checks, and rollback criteria","Defend an MCP host against prompt injection in tool output and tool definitions, and prove each control with a test that fails without it","Run a reference server that holds every requirement at once, and check your own server with its black-box conformance suite"],"coursePrerequisites":["Working knowledge of Python, including running tests and reading error output; TypeScript helps in the first module but is not required","Comfort reading HTTP requests, JSON messages, and command-line output","A computer able to run Docker Compose and several local containers","Internet access to download container images and pinned dependencies during setup"],"keywords":"model context protocol, mcp, mcp server, ai agents, agentic ai, llm tools, ai engineering, tool calling, backend api, stateless architecture, typescript, python, api integration, ai infrastructure","numberOfLessons":57,"offers":[{"@type":"Offer","category":"Paid","availability":"https://schema.org/PreOrder"}],"hasCourseInstance":[{"@type":"CourseInstance","courseMode":"Online","courseWorkload":"PT6H58M","instructor":{"@id":"https://runsclean.com/#org"}}],"syllabusSections":[{"@type":"Syllabus","name":"The Request Contract","description":"Welcome, and how the labs in this course run; Why a working tool call can fail on another replica; Read an MCP request from headers to tool arguments; Diagnose a rejected call without guessing at the server; Build the TypeScript server and run its contract tests; Build the Python server against the same contract; Test discovery and version handling across replicas","timeRequired":"PT63M"},{"@type":"Syllabus","name":"State and Retries","description":"A timeout does not tell you whether the write happened; Implement handles with ownership and expiry checks; Move application state beyond a single process; Make duplicate business operations detectable","timeRequired":"PT44M"},{"@type":"Syllabus","name":"Multi Round-Trip Requests","description":"The missing approval that blocks a tool call; Implement input requests and the client retry; Bind approval to the operation it authorizes; Test refusal, abandonment, and interrupted approval","timeRequired":"PT44M"},{"@type":"Syllabus","name":"Cacheable Results","description":"Implement cache hints on lists and resource reads; Partition cached results by caller and permissions; Keep list ordering and pagination predictable; Measure cache behavior without inventing a speedup","timeRequired":"PT42M"},{"@type":"Syllabus","name":"Gateway Policy","description":"Route by method and name, then check the body; Expose selected tool arguments through routing headers; Test header encoding and sensitive parameter boundaries; Apply tenant limits using verified request identity","timeRequired":"PT42M"},{"@type":"Syllabus","name":"Authorization Boundaries","description":"Run a local authorization flow for an MCP client; Validate issuer identity before exchanging a code; Configure client identity with metadata documents; Enforce audience and scopes at the resource boundary","timeRequired":"PT44M"},{"@type":"Syllabus","name":"Durable Tasks and Subscriptions","description":"Check extension support before starting a task; Persist a task and poll its lifecycle; Handle task input, cancellation, and competing workers; Subscribe to selected notifications and recover disconnects","timeRequired":"PT44M"},{"@type":"Syllabus","name":"Operate the Service","description":"The healthy replica that still fails a tool call; Assemble the service behind a local load balancer; Test readiness, graceful shutdown, and replica replacement; Trace tool latency, failures, and resource cost; Rehearse a release and prove the rollback path","timeRequired":"PT60M"},{"@type":"Syllabus","name":"Migration and Revision Watch","description":"What the 2026-07-28 revision changes in a running server; Inventory transport and client compatibility before migration; Migrate session state and callbacks with regression tests; Review registration, sampling, roots, and logging dependencies; Plan staged rollout against the published deprecation policy; What you can now show, and where to take it next","timeRequired":"PT52M"},{"@type":"Syllabus","name":"Agent Security","description":"Tool output is data, not instructions; Pin the tool definitions you approved; Least privilege on the server you run; Prove each control by removing it","timeRequired":"PT23M"},{"@type":"Syllabus","name":"Resources and Prompts","description":"Resources a caller can read safely; Hear about a resource change, then read it again; Prompts and completion that don't leak","timeRequired":"PT15M"},{"@type":"Syllabus","name":"Production Gaps","description":"Carry one trace across the gateway; Validate tokens from a real identity provider; A limit that holds across replicas; Progress and cancellation on one stream","timeRequired":"PT18M"},{"@type":"Syllabus","name":"Decisions and Costs","description":"Choose a pattern by what it costs","timeRequired":"PT4M"},{"@type":"Syllabus","name":"The Reference Server","description":"One path for every request; Any replica, any request; A client you didn't write","timeRequired":"PT12M"}],"about":[{"@type":"Thing","name":"Model Context Protocol","sameAs":"https://modelcontextprotocol.io/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which version of MCP does the course cover?","acceptedAnswer":{"@type":"Answer","text":"Revision 2026-07-28, the one without the initialization handshake or protocol sessions. Module 9 covers migrating a server written for 2025-11-25, including the features that are deprecated but still in the spec."}},{"@type":"Question","name":"Do I need to know TypeScript?","acceptedAnswer":{"@type":"Answer","text":"No. Python carries the course. Module 1 builds the same request contract in TypeScript too, so you can see which rules come from the protocol and which from a language, but you can follow it reading the Python side only."}},{"@type":"Question","name":"Do I need an API key or a cloud account?","acceptedAnswer":{"@type":"Answer","text":"No. Every lab runs locally with Docker Compose. The authorization labs bring their own local authorization server, and nothing calls a model provider."}},{"@type":"Question","name":"Is this an intro to MCP?","acceptedAnswer":{"@type":"Answer","text":"It's intermediate. You should be comfortable reading HTTP requests, JSON and test output. If you've built one MCP tool and wondered what happens behind a load balancer, you're the person it was written for."}},{"@type":"Question","name":"How long is it?","acceptedAnswer":{"@type":"Answer","text":"57 lessons and about seven hours of video, plus the labs, which take longer than the videos if you do the challenges. Nine core modules, then five bonus modules on agent security, resources and prompts, production gaps, design trade-offs and a reference server."}},{"@type":"Question","name":"Who's behind Runs Clean?","acceptedAnswer":{"@type":"Answer","text":"Runs Clean is a small publisher of engineering courses. There's no invented instructor with a stock photo. The courses are published under the brand, and what we put forward instead of a résumé is the standard: tested labs, sourced claims, dated material."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://runsclean.com/"},{"@type":"ListItem","position":2,"name":"Courses","item":"https://runsclean.com/courses/"},{"@type":"ListItem","position":3,"name":"MCP Production: Build and Operate Reliable Servers","item":"https://runsclean.com/courses/mcp-production/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://runsclean.com/#org","name":"Runs Clean","url":"https://runsclean.com/","logo":"https://runsclean.com/img/runs-clean-logo-512.png","email":"hello@runsclean.com","slogan":"Verified against code that runs."}</script>
+
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="announce">
+  <div class="wrap"><a href="/mcp-2026-migration/#get-the-cheatsheet"><span class="announce-tag">Soon</span><span class="announce-text">MCP Production opens on Udemy shortly</span><span class="announce-cta">Get notified <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a></div>
+</div>
+<header class="site-header" id="top">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Runs Clean, home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1684 227" role="img" aria-label="Runs Clean"><title>Runs Clean</title><path fill="#e6edf3" fill-rule="evenodd" d="M65.83,0.00 a65.83,65.83 0 0 1 65.83,65.83 v95.34 a65.83,65.83 0 0 1 -65.83,65.83 a65.83,65.83 0 0 1 -65.83,-65.83 v-95.34 a65.83,65.83 0 0 1 65.83,-65.83z M65.83,36.32 a29.51,29.51 0 0 1 29.51,29.51 v95.34 a29.51,29.51 0 0 1 -29.51,29.51 a29.51,29.51 0 0 1 -29.51,-29.51 v-95.34 a29.51,29.51 0 0 1 29.51,-29.51z"/><rect x="152.08" y="190.67" width="90.80" height="36.32" rx="4.54" fill="#58a6ff"/><path fill="#e6edf3" d="M354.62460937500003 226.9921875V72.3046875H390.22031250000003V97.939453125H390.65976562500003Q394.90781250000003 84.755859375 404.06308593750003 77.7978515625Q413.21835937500003 70.83984375 428.15976562500003 70.83984375Q431.96835937500003 70.83984375 434.97128906250003 71.0595703125Q437.97421875000003 71.279296875 440.17148437500003 71.42578125V104.23828125Q438.12070312500003 103.9453125 433.14023437500003 103.505859375Q428.15976562500003 103.06640625 422.73984375000003 103.06640625Q409.55625000000003 103.06640625 400.54746093750003 112.1484375Q391.53867187500003 121.23046875 391.53867187500003 139.39453125V226.9921875ZM509.88984375 230.068359375Q485.5734375 230.068359375 470.192578125 214.39453125Q454.81171875 198.720703125 454.81171875 168.984375V72.3046875H491.72578125V163.125Q491.72578125 180.1171875 499.92890625 188.90625Q508.13203125 197.6953125 522.926953125 197.6953125Q537.575390625 197.6953125 547.1701171875 188.61328125Q556.76484375 179.53125 556.76484375 159.755859375V72.3046875H593.825390625V226.9921875H557.497265625V203.26171875Q541.2375 230.068359375 509.88984375 230.068359375ZM656.951953125 139.541015625V226.9921875H620.037890625V72.3046875H656.366015625V96.03515625Q672.479296875 69.228515625 703.826953125 69.228515625Q728.143359375 69.228515625 743.5974609375 84.90234375Q759.0515625 100.576171875 759.0515625 130.3125V226.9921875H721.991015625V136.171875Q721.991015625 119.1796875 713.787890625 110.390625Q705.584765625 101.6015625 690.78984375 101.6015625Q676.287890625 101.6015625 666.619921875 110.68359375Q656.951953125 119.765625 656.951953125 139.541015625ZM845.90859375 230.654296875Q817.637109375 230.654296875 798.6673828125 217.3974609375Q779.69765625 204.140625 777.93984375 179.23828125H814.414453125Q815.586328125 190.517578125 823.496484375 196.7431640625Q831.406640625 202.96875 845.32265625 202.96875Q858.652734375 202.96875 866.3431640625 197.6953125Q874.03359375 192.421875 874.03359375 184.21875Q874.03359375 177.1875 868.320703125 172.939453125Q862.6078125 168.69140625 852.93984375 166.640625L826.57265625 161.220703125Q781.45546875 151.845703125 781.45546875 116.54296875Q781.45546875 95.15625 798.44765625 82.0458984375Q815.43984375 68.935546875 843.711328125 68.935546875Q871.836328125 68.935546875 889.4876953125 82.7783203125Q907.1390625 96.62109375 907.725 120.498046875H873.008203125Q872.715234375 110.09765625 864.9515625 103.359375Q857.187890625 96.62109375 844.590234375 96.62109375Q832.43203125 96.62109375 825.40078125 102.041015625Q818.36953125 107.4609375 818.36953125 115.37109375Q818.36953125 122.255859375 823.789453125 126.5771484375Q829.209375 130.8984375 838.87734375 133.095703125L866.709375 138.80859375Q889.707421875 143.642578125 900.6205078125 154.04296875Q911.53359375 164.443359375 911.53359375 181.435546875Q911.53359375 196.5234375 903.1107421875 207.5830078125Q894.687890625 218.642578125 879.89296875 224.6484375Q865.098046875 230.654296875 845.90859375 230.654296875ZM1059.759375 230.5078125Q1037.20078125 230.5078125 1020.1353515625001 220.25390625Q1003.0699218750001 210.0 993.6216796875001 191.8359375Q984.1734375000001 173.671875 984.1734375000001 149.794921875Q984.1734375000001 125.91796875 993.6216796875001 107.6806640625Q1003.0699218750001 89.443359375 1020.1353515625001 79.1162109375Q1037.20078125 68.7890625 1059.759375 68.7890625Q1079.241796875 68.7890625 1094.476171875 76.3330078125Q1109.710546875 83.876953125 1119.0123046875 97.1337890625Q1128.3140625 110.390625 1129.925390625 127.67578125H1093.74375Q1091.69296875 115.224609375 1083.1236328125 107.3876953125Q1074.554296875 99.55078125 1060.198828125 99.55078125Q1042.034765625 99.55078125 1031.780859375 113.173828125Q1021.5269531250001 126.796875 1021.5269531250001 149.794921875Q1021.5269531250001 172.646484375 1031.780859375 186.1962890625Q1042.034765625 199.74609375 1060.198828125 199.74609375Q1074.70078125 199.74609375 1082.757421875 192.0556640625Q1090.8140625 184.365234375 1093.45078125 171.474609375H1129.925390625Q1128.60703125 188.466796875 1119.3052734375 201.796875Q1110.003515625 215.126953125 1094.6958984375 222.8173828125Q1079.38828125 230.5078125 1059.759375 230.5078125ZM1184.9953125000002 8.73046875V226.9921875H1148.0812500000002V8.73046875ZM1279.4695312500003 230.5078125Q1256.3250000000003 230.5078125 1239.3328125000003 220.107421875Q1222.3406250000003 209.70703125 1213.1853515625003 191.4697265625Q1204.0300781250003 173.232421875 1204.0300781250003 149.794921875Q1204.0300781250003 126.2109375 1213.4783203125003 107.9736328125Q1222.9265625000003 89.736328125 1239.6257812500003 79.2626953125Q1256.3250000000003 68.7890625 1278.0046875000003 68.7890625Q1300.2703125000003 68.7890625 1316.9695312500003 79.04296875Q1333.6687500000003 89.296875 1342.8972656250003 107.3876953125Q1352.1257812500003 125.478515625 1352.1257812500003 149.208984375V159.31640625H1240.2117187500003Q1240.9441406250003 178.212890625 1251.3445312500003 189.78515625Q1261.7449218750003 201.357421875 1280.3484375000003 201.357421875Q1294.2644531250003 201.357421875 1303.3464843750003 195.2783203125Q1312.4285156250003 189.19921875 1315.6511718750003 179.23828125H1350.2214843750003Q1347.2917968750003 194.326171875 1337.4041015625003 205.8984375Q1327.5164062500003 217.470703125 1312.5750000000003 223.9892578125Q1297.6335937500003 230.5078125 1279.4695312500003 230.5078125ZM1240.5046875000003 133.828125H1316.6765625000003Q1314.9187500000003 117.275390625 1304.7380859375003 107.6806640625Q1294.5574218750003 98.0859375 1278.5906250000003 98.0859375Q1262.4773437500003 98.0859375 1252.4431640625003 107.6806640625Q1242.4089843750003 117.275390625 1240.5046875000003 133.828125ZM1419.7933593750004 229.482421875Q1396.6488281250004 229.482421875 1381.4876953125004 217.8369140625Q1366.3265625000004 206.19140625 1366.3265625000004 183.046875Q1366.3265625000004 165.46875 1374.8958984375004 155.8740234375Q1383.4652343750004 146.279296875 1397.3080078125004 141.884765625Q1411.1507812500004 137.490234375 1427.1175781250004 135.87890625Q1448.6507812500004 133.388671875 1457.1468750000004 131.484375Q1465.6429687500004 129.580078125 1465.6429687500004 121.669921875V120.498046875Q1465.6429687500004 110.537109375 1458.0990234375004 104.23828125Q1450.5550781250004 97.939453125 1437.3714843750004 97.939453125Q1423.8949218750004 97.939453125 1415.4720703125004 104.23828125Q1407.0492187500004 110.537109375 1406.3167968750004 120.3515625H1370.7210937500004Q1372.0394531250004 97.353515625 1389.9105468750004 83.291015625Q1407.7816406250004 69.228515625 1438.1039062500004 69.228515625Q1468.2796875000004 69.228515625 1485.2718750000004 83.291015625Q1502.2640625000004 97.353515625 1502.2640625000004 121.5234375V226.9921875H1465.9359375000004V205.166015625H1465.3500000000004Q1459.7835937500004 215.419921875 1449.2367187500004 222.451171875Q1438.6898437500004 229.482421875 1419.7933593750004 229.482421875ZM1428.8753906250004 202.08984375Q1447.0394531250004 202.08984375 1456.4144531250004 192.6416015625Q1465.7894531250004 183.193359375 1465.7894531250004 169.716796875V153.017578125Q1462.4203125000004 155.21484375 1452.7523437500004 157.0458984375Q1443.0843750000004 158.876953125 1431.6585937500004 160.634765625Q1419.7933593750004 162.392578125 1411.0775390625004 167.2998046875Q1402.3617187500004 172.20703125 1402.3617187500004 182.75390625Q1402.3617187500004 191.8359375 1409.5394531250004 196.962890625Q1416.7171875000004 202.08984375 1428.8753906250004 202.08984375ZM1565.2441406250002 139.541015625V226.9921875H1528.3300781250002V72.3046875H1564.6582031250002V96.03515625Q1580.7714843750002 69.228515625 1612.1191406250002 69.228515625Q1636.4355468750002 69.228515625 1651.8896484375002 84.90234375Q1667.3437500000002 100.576171875 1667.3437500000002 130.3125V226.9921875H1630.2832031250002V136.171875Q1630.2832031250002 119.1796875 1622.0800781250002 110.390625Q1613.8769531250002 101.6015625 1599.0820312500002 101.6015625Q1584.5800781250002 101.6015625 1574.9121093750002 110.68359375Q1565.2441406250002 119.765625 1565.2441406250002 139.541015625Z"/></svg></a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-menu"><span class="sr">Menu</span><i aria-hidden="true"></i><i aria-hidden="true"></i></button>
+    <nav class="nav" id="site-menu" aria-label="Main">
+      <div class="nav-links">
+        <a href="/courses/" aria-current="page"><span class="nav-i" aria-hidden="true">01</span>Courses</a>
+        <a href="/mcp-2026-migration/"><span class="nav-i" aria-hidden="true">02</span>Migration guide</a>
+        <a href="/about/"><span class="nav-i" aria-hidden="true">03</span>About</a>
+      </div>
+      <div class="nav-courses m-only">
+        <p class="nav-label">Courses</p>
+        <a class="nav-course" href="/courses/mcp-production/"><span class="nav-course-mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="MCP Production"><title>MCP Production</title><rect width="1000" height="1000" rx="224" fill="#0d1117"/><g transform="translate(290.00,290.00)"><rect x="245.70" y="0.00" width="29.40" height="420.00" rx="14.70" fill="#58a6ff"/><rect x="14.70" y="14.70" width="390.60" height="79.80" rx="39.90" fill="none" stroke="#e6edf3" stroke-width="29.40"/><circle cx="260.40" cy="54.60" r="25.20" fill="#58a6ff"/><rect x="14.70" y="170.10" width="390.60" height="79.80" rx="39.90" fill="none" stroke="#e6edf3" stroke-width="29.40"/><circle cx="260.40" cy="210.00" r="25.20" fill="#58a6ff"/><rect x="14.70" y="325.50" width="390.60" height="79.80" rx="39.90" fill="none" stroke="#e6edf3" stroke-width="29.40"/><circle cx="260.40" cy="365.40" r="25.20" fill="#58a6ff"/></g></svg></span><span><b>MCP Production</b><small>57 lessons · 6h58</small></span></a>
+      </div>
+      <a class="btn btn-primary btn-small nav-cta" href="/mcp-2026-migration/#get-the-cheatsheet">Free cheatsheet <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <p class="nav-foot m-only"><a href="mailto:hello@runsclean.com">hello@runsclean.com</a></p>
+    </nav>
+  </div>
+</header>
+<main id="main">
+
+
+
+
+<section class="hero hero-course">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Course · Model Context Protocol · revision 2026-07-28</p>
+      <h1>MCP servers that still behave when the request lands on the other replica.</h1>
+      <p class="lede">A hands-on course for backend and platform engineers. You build Model Context Protocol servers in Python, put them behind a gateway, give them real authorization and durable work, and test the ugly cases: the retry after a timeout, the approval that never came back, the token meant for someone else.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/mcp-2026-migration/#get-the-cheatsheet">Get notified at launch <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn btn-ghost" href="#curriculum">See all 57 lessons</a>
+      </div>
+      <ul class="facts" aria-label="Course facts">
+        <li><b>57</b><span>lessons</span></li><li><b>6h58</b><span>of video</span></li><li><b>14</b><span>Docker labs</span></li><li><b>2026-07-28</b><span>spec revision</span></li>
+      </ul>
+    </div>
+    <div class="hero-art reveal" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1312 477" role="img" aria-label="MCP Production"><title>MCP Production</title><rect x="278.94" y="0.00" width="33.38" height="476.81" rx="16.69" fill="#58a6ff"/><rect x="16.69" y="16.69" width="443.44" height="90.59" rx="45.30" fill="none" stroke="#e6edf3" stroke-width="33.38"/><circle cx="295.62" cy="61.99" r="28.61" fill="#58a6ff"/><rect x="16.69" y="193.11" width="443.44" height="90.59" rx="45.30" fill="none" stroke="#e6edf3" stroke-width="33.38"/><circle cx="295.62" cy="238.41" r="28.61" fill="#58a6ff"/><rect x="16.69" y="369.53" width="443.44" height="90.59" rx="45.30" fill="none" stroke="#e6edf3" stroke-width="33.38"/><circle cx="295.62" cy="414.83" r="28.61" fill="#58a6ff"/><g transform="translate(610.32,0)"><path fill="#e6edf3" d="M16.259765625 218.26171875V0.0H82.03125L118.06640625 101.66015625Q121.142578125 111.328125 125.7568359375 126.7822265625Q130.37109375 142.236328125 134.326171875 156.298828125Q138.28125 142.236328125 142.8955078125 126.7822265625Q147.509765625 111.328125 150.439453125 101.66015625L186.03515625 0.0H251.806640625V218.26171875H207.71484375V114.55078125Q207.71484375 103.125 208.2275390625 85.25390625Q208.740234375 67.3828125 209.1796875 49.365234375Q203.466796875 68.408203125 198.193359375 86.2060546875Q192.919921875 104.00390625 189.404296875 114.55078125L152.490234375 218.26171875H115.869140625L78.515625 114.55078125Q75.146484375 104.443359375 69.9462890625 87.59765625Q64.74609375 70.751953125 59.1796875 52.44140625Q59.619140625 69.7265625 60.05859375 86.6455078125Q60.498046875 103.564453125 60.498046875 114.55078125V218.26171875ZM375.15234375 221.77734375Q345.123046875 221.77734375 321.685546875 208.0810546875Q298.248046875 194.384765625 284.8447265625 169.1162109375Q271.44140625 143.84765625 271.44140625 109.27734375Q271.44140625 74.4140625 284.8447265625 49.1455078125Q298.248046875 23.876953125 321.685546875 10.1806640625Q345.123046875 -3.515625 375.15234375 -3.515625Q400.787109375 -3.515625 421.2216796875 6.4453125Q441.65625 16.40625 454.693359375 34.4970703125Q467.73046875 52.587890625 471.24609375 76.904296875H425.689453125Q421.734375 57.568359375 408.4775390625 46.9482421875Q395.220703125 36.328125 375.73828125 36.328125Q347.90625 36.328125 332.37890625 56.0302734375Q316.8515625 75.732421875 316.8515625 109.27734375Q316.8515625 142.529296875 332.37890625 162.2314453125Q347.90625 181.93359375 375.73828125 181.93359375Q395.07421875 181.93359375 408.3310546875 171.38671875Q421.587890625 160.83984375 425.8359375 141.650390625H471.24609375Q467.73046875 165.966796875 454.693359375 183.984375Q441.65625 202.001953125 421.2216796875 211.8896484375Q400.787109375 221.77734375 375.15234375 221.77734375ZM490.294921875 218.26171875V0.0H576.427734375Q600.890625 0.0 618.8349609375 8.7158203125Q636.779296875 17.431640625 646.5205078125 33.544921875Q656.26171875 49.658203125 656.26171875 71.630859375Q656.26171875 93.603515625 646.3740234375 109.6435546875Q636.486328125 125.68359375 618.46875 134.47265625Q600.451171875 143.26171875 575.841796875 143.26171875H535.412109375V218.26171875ZM535.412109375 105.46875H573.498046875Q591.369140625 105.46875 601.76953125 96.3134765625Q612.169921875 87.158203125 612.169921875 71.630859375Q612.169921875 55.95703125 601.76953125 46.875Q591.369140625 37.79296875 573.498046875 37.79296875H535.412109375Z"/><path fill="#e6edf3" d="M9.9609375 367.392578125V258.26171875H50.390625Q67.8955078125 258.26171875 78.1494140625 267.4169921875Q88.4033203125 276.572265625 88.4033203125 292.24609375Q88.4033203125 302.7197265625 83.642578125 310.37353515625Q78.8818359375 318.02734375 70.2392578125 322.16552734375Q61.5966796875 326.3037109375 49.8779296875 326.3037109375H26.220703125V367.392578125ZM26.220703125 312.2412109375H49.5849609375Q60.1318359375 312.2412109375 66.24755859375 306.85791015625Q72.36328125 301.474609375 72.36328125 292.24609375Q72.36328125 283.017578125 66.24755859375 277.70751953125Q60.1318359375 272.3974609375 49.5849609375 272.3974609375H26.220703125ZM97.5685546875 367.392578125V290.048828125H112.3634765625V302.5732421875H112.6564453125Q114.78046875 296.201171875 119.35810546875 292.64892578125Q123.9357421875 289.0966796875 131.333203125 289.0966796875Q133.091015625 289.0966796875 134.555859375 289.2431640625Q136.020703125 289.3896484375 136.9728515625 289.462890625V303.8916015625Q136.0939453125 303.671875 133.8234375 303.41552734375Q131.5529296875 303.1591796875 128.84296875 303.1591796875Q122.3244140625 303.1591796875 117.67353515625 307.7001953125Q113.02265625 312.2412109375 113.02265625 321.689453125V367.392578125ZM177.851953125 369.150390625Q166.7923828125 369.150390625 158.4427734375 364.0234375Q150.0931640625 358.896484375 145.44228515625 349.814453125Q140.79140625 340.732421875 140.79140625 328.8671875Q140.79140625 316.85546875 145.44228515625 307.73681640625Q150.0931640625 298.6181640625 158.4427734375 293.45458984375Q166.7923828125 288.291015625 177.851953125 288.291015625Q188.9115234375 288.291015625 197.22451171875 293.45458984375Q205.5375 298.6181640625 210.18837890625 307.73681640625Q214.8392578125 316.85546875 214.8392578125 328.8671875Q214.8392578125 340.732421875 210.18837890625 349.814453125Q205.5375 358.896484375 197.22451171875 364.0234375Q188.9115234375 369.150390625 177.851953125 369.150390625ZM177.851953125 355.8203125Q187.812890625 355.8203125 193.52578125 348.49609375Q199.238671875 341.171875 199.238671875 328.8671875Q199.238671875 316.416015625 193.48916015625 309.0185546875Q187.7396484375 301.62109375 177.851953125 301.62109375Q167.9642578125 301.62109375 162.21474609375 308.98193359375Q156.465234375 316.3427734375 156.465234375 328.8671875Q156.465234375 341.2451171875 162.178125 348.53271484375Q167.891015625 355.8203125 177.851953125 355.8203125ZM255.571875 368.9306640625Q245.464453125 368.9306640625 237.9205078125 363.84033203125Q230.3765625 358.75 226.2017578125 349.70458984375Q222.026953125 340.6591796875 222.026953125 328.720703125Q222.026953125 316.7822265625 226.23837890625 307.73681640625Q230.4498046875 298.69140625 237.99375 293.60107421875Q245.5376953125 288.5107421875 255.4986328125 288.5107421875Q263.042578125 288.5107421875 269.2681640625 291.66015625Q275.49375 294.8095703125 279.2291015625 301.2548828125H279.3755859375V258.26171875H294.8296875V367.392578125H279.6685546875V355.6005859375H279.5220703125Q275.640234375 362.3388671875 269.37802734375 365.634765625Q263.1158203125 368.9306640625 255.571875 368.9306640625ZM258.7212890625 355.6005859375Q268.608984375 355.6005859375 274.50498046875 348.23974609375Q280.4009765625 340.87890625 280.4009765625 328.720703125Q280.4009765625 316.4892578125 274.50498046875 309.12841796875Q268.608984375 301.767578125 258.7212890625 301.767578125Q249.3462890625 301.767578125 243.52353515625 308.68896484375Q237.70078125 315.6103515625 237.70078125 328.720703125Q237.70078125 341.8310546875 243.52353515625 348.7158203125Q249.3462890625 355.6005859375 258.7212890625 355.6005859375ZM337.53984375 368.9306640625Q329.6296875 368.9306640625 323.29423828125 365.45166015625Q316.9587890625 361.97265625 313.26005859375 355.1611328125Q309.561328125 348.349609375 309.561328125 338.2421875V290.048828125H325.0154296875V336.337890625Q325.0154296875 345.6396484375 329.483203125 350.36376953125Q333.9509765625 355.087890625 342.0076171875 355.087890625Q349.84453125 355.087890625 355.22783203125 350.21728515625Q360.6111328125 345.3466796875 360.6111328125 334.580078125V290.048828125H376.065234375V367.392578125H360.9041015625V355.7470703125Q352.9939453125 368.9306640625 337.53984375 368.9306640625ZM423.90234375 369.150390625Q412.8427734375 369.150390625 404.52978515625 364.0234375Q396.216796875 358.896484375 391.6025390625 349.77783203125Q386.98828125 340.6591796875 386.98828125 328.8671875Q386.98828125 316.9287109375 391.63916015625 307.7734375Q396.2900390625 298.6181640625 404.56640625 293.45458984375Q412.8427734375 288.291015625 423.90234375 288.291015625Q433.130859375 288.291015625 440.41845703125 291.91650390625Q447.7060546875 295.5419921875 452.2470703125 301.9140625Q456.7880859375 308.2861328125 457.740234375 316.4892578125H442.359375Q441.1875 309.970703125 436.5 305.7958984375Q431.8125 301.62109375 423.9755859375 301.62109375Q413.94140625 301.62109375 408.3017578125 309.0185546875Q402.662109375 316.416015625 402.662109375 328.8671875Q402.662109375 341.171875 408.3017578125 348.49609375Q413.94140625 355.8203125 423.9755859375 355.8203125Q431.958984375 355.8203125 436.2802734375 351.75537109375Q440.6015625 347.6904296875 442.1396484375 340.87890625H457.740234375Q456.861328125 348.935546875 452.3203125 355.34423828125Q447.779296875 361.7529296875 440.455078125 365.45166015625Q433.130859375 369.150390625 423.90234375 369.150390625ZM505.43085937500007 290.048828125V302.79296875H489.75703125000007V346.9580078125Q489.75703125000007 351.279296875 491.51484375000007 352.9638671875Q493.27265625000007 354.6484375 497.88691406250007 354.6484375H505.43085937500007V367.392578125H495.68964843750007Q474.22968750000007 367.392578125 474.22968750000007 348.935546875V302.79296875H460.60664062500007V290.048828125H474.22968750000007V268.955078125H489.75703125000007V290.048828125ZM514.9623046875001 367.392578125V290.048828125H530.4164062500001V367.392578125ZM522.6527343750001 276.71875Q518.5511718750001 276.71875 515.7313476562501 273.97216796875Q512.9115234375001 271.2255859375 512.9115234375001 267.2705078125Q512.9115234375001 263.2421875 515.7313476562501 260.49560546875Q518.5511718750001 257.7490234375 522.6527343750001 257.7490234375Q526.7542968750001 257.7490234375 529.6107421875001 260.49560546875Q532.4671875000001 263.2421875 532.4671875000001 267.2705078125Q532.4671875000001 271.2255859375 529.6107421875001 273.97216796875Q526.7542968750001 276.71875 522.6527343750001 276.71875ZM578.4000000000001 369.150390625Q567.3404296875001 369.150390625 558.9908203125001 364.0234375Q550.6412109375001 358.896484375 545.9903320312501 349.814453125Q541.3394531250001 340.732421875 541.3394531250001 328.8671875Q541.3394531250001 316.85546875 545.9903320312501 307.73681640625Q550.6412109375001 298.6181640625 558.9908203125001 293.45458984375Q567.3404296875001 288.291015625 578.4000000000001 288.291015625Q589.4595703125001 288.291015625 597.7725585937501 293.45458984375Q606.0855468750001 298.6181640625 610.7364257812501 307.73681640625Q615.3873046875001 316.85546875 615.3873046875001 328.8671875Q615.3873046875001 340.732421875 610.7364257812501 349.814453125Q606.0855468750001 358.896484375 597.7725585937501 364.0234375Q589.4595703125001 369.150390625 578.4000000000001 369.150390625ZM578.4000000000001 355.8203125Q588.3609375000001 355.8203125 594.0738281250001 348.49609375Q599.7867187500001 341.171875 599.7867187500001 328.8671875Q599.7867187500001 316.416015625 594.0372070312501 309.0185546875Q588.2876953125001 301.62109375 578.4000000000001 301.62109375Q568.5123046875001 301.62109375 562.7627929687501 308.98193359375Q557.0132812500001 316.3427734375 557.0132812500001 328.8671875Q557.0132812500001 341.2451171875 562.7261718750001 348.53271484375Q568.4390625000001 355.8203125 578.4000000000001 355.8203125ZM641.8376953125002 322.861328125V367.392578125H626.3835937500002V290.048828125H641.5447265625002V301.6943359375Q649.4548828125002 288.5107421875 664.9089843750002 288.5107421875Q672.8923828125002 288.5107421875 679.2278320312502 291.98974609375Q685.5632812500002 295.46875 689.2253906250002 302.2802734375Q692.8875000000002 309.091796875 692.8875000000002 319.19921875V367.392578125H677.4333984375002V321.103515625Q677.4333984375002 311.8017578125 672.9656250000002 307.07763671875Q668.4978515625002 302.353515625 660.5144531250002 302.353515625Q652.6042968750002 302.353515625 647.2209960937502 307.22412109375Q641.8376953125002 312.0947265625 641.8376953125002 322.861328125Z"/><path fill="#8b949e" d="M4.806 476.812578125V437.392578125H17.01Q20.628 437.392578125 23.328 438.82357812500004Q26.028 440.254578125 27.54 442.819578125Q29.052 445.384578125 29.052 448.84057812500004Q29.052 452.836578125 27.027 455.69857812500004Q25.002 458.560578125 21.654 459.748578125L29.592 476.812578125H23.706L16.2 460.34257812500005H10.098V476.812578125ZM10.098 455.59057812500004H17.01Q20.034 455.59057812500004 21.789 453.754578125Q23.544 451.918578125 23.544 448.894578125Q23.544 445.81657812500004 21.762 443.980578125Q19.98 442.144578125 17.01 442.144578125H10.098ZM40.878 476.812578125V437.392578125H63.828V442.19857812500004H46.17V453.916578125H61.938V458.560578125H46.17V472.00657812500003H63.828V476.812578125ZM83.862 476.812578125 73.764 437.392578125H79.272L85.806 463.96057812500004Q86.45400000000001 466.498578125 86.91300000000001 468.84757812500004Q87.372 471.19657812500003 87.588 472.438578125Q87.75 471.19657812500003 88.263 468.820578125Q88.776 466.444578125 89.37 463.906578125L95.688 437.392578125H101.196L91.044 476.812578125ZM112.374 476.812578125V471.952578125H120.42V442.252578125H112.374V437.392578125H133.86599999999999V442.252578125H125.82V471.952578125H133.86599999999999V476.812578125ZM158.976 477.35257812500004Q153.144 477.35257812500004 149.688 474.301578125Q146.232 471.250578125 146.232 465.904578125H151.578Q151.578 469.036578125 153.57600000000002 470.81857812500004Q155.574 472.600578125 158.976 472.600578125Q162.216 472.600578125 164.133 470.791578125Q166.05 468.98257812500003 166.05 465.95857812500003Q166.05 463.690578125 164.808 461.989578125Q163.566 460.288578125 161.298 459.694578125L155.466 458.128578125Q151.632 457.048578125 149.39100000000002 454.213578125Q147.15 451.378578125 147.15 447.490578125Q147.15 444.30457812500003 148.58100000000002 441.901578125Q150.012 439.498578125 152.60399999999998 438.175578125Q155.196 436.85257812500004 158.598 436.85257812500004Q162.054 436.85257812500004 164.673 438.175578125Q167.292 439.498578125 168.75 441.87457812499997Q170.208 444.250578125 170.208 447.382578125H164.916Q164.916 444.790578125 163.161 443.170578125Q161.406 441.550578125 158.598 441.550578125Q155.79 441.550578125 154.089 443.170578125Q152.388 444.790578125 152.388 447.382578125Q152.388 449.488578125 153.522 450.91957812500004Q154.656 452.350578125 156.708 452.944578125L162.702 454.564578125Q166.752 455.644578125 169.02 458.695578125Q171.288 461.74657812500004 171.288 465.95857812500003Q171.288 469.414578125 169.776 471.979578125Q168.264 474.54457812500004 165.483 475.94857812500004Q162.702 477.35257812500004 158.976 477.35257812500004ZM183.654 476.812578125V471.952578125H191.7V442.252578125H183.654V437.392578125H205.146V442.252578125H197.1V471.952578125H205.146V476.812578125ZM230.04 477.35257812500004Q224.64000000000001 477.35257812500004 221.508 474.22057812500003Q218.376 471.088578125 218.376 465.36457812500004V448.786578125Q218.376 443.11657812500005 221.508 439.98457812500004Q224.64000000000001 436.85257812500004 230.04 436.85257812500004Q235.44 436.85257812500004 238.572 439.95757812500005Q241.704 443.062578125 241.704 448.786578125V465.36457812500004Q241.704 471.088578125 238.572 474.22057812500003Q235.44 477.35257812500004 230.04 477.35257812500004ZM230.04 472.600578125Q233.064 472.600578125 234.711 470.872578125Q236.358 469.144578125 236.358 465.904578125V448.24657812500004Q236.358 445.060578125 234.738 443.332578125Q233.118 441.604578125 230.04 441.604578125Q226.962 441.604578125 225.34199999999998 443.332578125Q223.722 445.060578125 223.722 448.24657812500004V465.904578125Q223.722 469.144578125 225.369 470.872578125Q227.016 472.600578125 230.04 472.600578125ZM254.124 476.812578125V437.392578125H261.036L272.808 470.656578125Q272.646 469.252578125 272.51099999999997 467.173578125Q272.376 465.094578125 272.29499999999996 462.853578125Q272.214 460.612578125 272.214 458.61457812500004V437.392578125H277.28999999999996V476.812578125H270.324L258.65999999999997 443.548578125Q258.768 444.952578125 258.876 446.97757812500004Q258.984 449.002578125 259.065 451.216578125Q259.146 453.430578125 259.146 455.374578125V476.812578125ZM325.242 476.812578125V471.89857812500003L338.634 457.750578125Q341.226 455.050578125 342.33299999999997 452.80957812500003Q343.44 450.56857812500004 343.44 448.408578125Q343.44 445.330578125 341.658 443.467578125Q339.876 441.604578125 336.852 441.604578125Q333.71999999999997 441.604578125 331.884 443.494578125Q330.048 445.384578125 330.048 448.624578125H324.702Q324.81 443.224578125 328.131 440.038578125Q331.452 436.85257812500004 336.852 436.85257812500004Q342.36 436.85257812500004 345.627 439.98457812500004Q348.894 443.11657812500005 348.894 448.354578125Q348.894 451.216578125 347.382 454.321578125Q345.87 457.426578125 342.252 461.152578125L331.776 471.952578125H349.38V476.812578125ZM372.59999999999997 477.35257812500004Q367.03799999999995 477.35257812500004 363.798 474.19357812500004Q360.558 471.034578125 360.558 465.688578125V448.516578125Q360.558 443.170578125 363.798 440.011578125Q367.03799999999995 436.85257812500004 372.59999999999997 436.85257812500004Q378.162 436.85257812500004 381.402 440.011578125Q384.642 443.170578125 384.642 448.516578125V465.688578125Q384.642 469.19857812500004 383.157 471.81757812500007Q381.67199999999997 474.43657812500004 378.972 475.89457812500007Q376.272 477.35257812500004 372.59999999999997 477.35257812500004ZM372.59999999999997 472.762578125Q375.73199999999997 472.762578125 377.62199999999996 470.791578125Q379.512 468.820578125 379.512 465.688578125V448.516578125Q379.512 445.384578125 377.62199999999996 443.413578125Q375.73199999999997 441.442578125 372.59999999999997 441.442578125Q369.46799999999996 441.442578125 367.578 443.413578125Q365.688 445.384578125 365.688 448.516578125V465.688578125Q365.688 468.820578125 367.578 470.791578125Q369.46799999999996 472.762578125 372.59999999999997 472.762578125ZM372.59999999999997 460.12657812500004Q371.08799999999997 460.12657812500004 370.197 459.28957812500005Q369.306 458.452578125 369.306 456.940578125Q369.306 455.428578125 370.197 454.64557812500004Q371.08799999999997 453.862578125 372.59999999999997 453.862578125Q374.11199999999997 453.862578125 375.03 454.64557812500004Q375.948 455.428578125 375.948 456.940578125Q375.948 458.452578125 375.03 459.28957812500005Q374.11199999999997 460.12657812500004 372.59999999999997 460.12657812500004ZM396.52200000000005 476.812578125V471.89857812500003L409.91400000000004 457.750578125Q412.50600000000003 455.050578125 413.61300000000006 452.80957812500003Q414.72 450.56857812500004 414.72 448.408578125Q414.72 445.330578125 412.938 443.467578125Q411.156 441.604578125 408.132 441.604578125Q405.0 441.604578125 403.164 443.494578125Q401.32800000000003 445.384578125 401.32800000000003 448.624578125H395.982Q396.09000000000003 443.224578125 399.41100000000006 440.038578125Q402.732 436.85257812500004 408.132 436.85257812500004Q413.64000000000004 436.85257812500004 416.90700000000004 439.98457812500004Q420.17400000000004 443.11657812500005 420.17400000000004 448.354578125Q420.17400000000004 451.216578125 418.66200000000003 454.321578125Q417.15000000000003 457.426578125 413.53200000000004 461.152578125L403.05600000000004 471.952578125H420.66V476.812578125ZM443.934 477.35257812500004Q440.046 477.35257812500004 437.13 475.759578125Q434.214 474.166578125 432.594 471.30457812500003Q430.974 468.442578125 430.974 464.66257812500004Q430.974 462.124578125 431.97299999999996 459.31657812500004Q432.972 456.50857812500004 434.646 453.538578125L443.61 437.392578125H449.604L439.776 454.402578125L439.938 454.510578125Q440.64 453.59257812500005 442.071 453.052578125Q443.502 452.512578125 445.284 452.512578125Q448.68600000000004 452.512578125 451.278 454.024578125Q453.87 455.536578125 455.328 458.23657812500005Q456.786 460.93657812500004 456.786 464.55457812500003Q456.786 468.38857812500004 455.166 471.25057812500006Q453.546 474.112578125 450.65700000000004 475.73257812500003Q447.76800000000003 477.35257812500004 443.934 477.35257812500004ZM443.88 472.654578125Q447.282 472.654578125 449.361 470.440578125Q451.44 468.226578125 451.44 464.66257812500004Q451.44 461.04457812500004 449.361 458.830578125Q447.282 456.616578125 443.88 456.616578125Q440.478 456.616578125 438.399 458.830578125Q436.32 461.04457812500004 436.32 464.66257812500004Q436.32 468.226578125 438.399 470.440578125Q440.478 472.654578125 443.88 472.654578125ZM470.88 461.368578125V456.562578125H488.15999999999997V461.368578125ZM515.16 477.35257812500004Q509.59799999999996 477.35257812500004 506.35799999999995 474.19357812500004Q503.118 471.034578125 503.118 465.688578125V448.516578125Q503.118 443.170578125 506.35799999999995 440.011578125Q509.59799999999996 436.85257812500004 515.16 436.85257812500004Q520.722 436.85257812500004 523.962 440.011578125Q527.202 443.170578125 527.202 448.516578125V465.688578125Q527.202 469.19857812500004 525.717 471.81757812500007Q524.232 474.43657812500004 521.5319999999999 475.89457812500007Q518.832 477.35257812500004 515.16 477.35257812500004ZM515.16 472.762578125Q518.292 472.762578125 520.182 470.791578125Q522.072 468.820578125 522.072 465.688578125V448.516578125Q522.072 445.384578125 520.182 443.413578125Q518.292 441.442578125 515.16 441.442578125Q512.028 441.442578125 510.13800000000003 443.413578125Q508.248 445.384578125 508.248 448.516578125V465.688578125Q508.248 468.820578125 510.13800000000003 470.791578125Q512.028 472.762578125 515.16 472.762578125ZM515.16 460.12657812500004Q513.648 460.12657812500004 512.7570000000001 459.28957812500005Q511.866 458.452578125 511.866 456.940578125Q511.866 455.428578125 512.7570000000001 454.64557812500004Q513.648 453.862578125 515.16 453.862578125Q516.672 453.862578125 517.5899999999999 454.64557812500004Q518.5079999999999 455.428578125 518.5079999999999 456.940578125Q518.5079999999999 458.452578125 517.5899999999999 459.28957812500005Q516.672 460.12657812500004 515.16 460.12657812500004ZM544.428 476.812578125 558.576 442.19857812500004H544.158V448.570578125H538.812V437.392578125H564.3000000000001V442.306578125L550.26 476.812578125ZM577.8 461.368578125V456.562578125H595.08V461.368578125ZM610.362 476.812578125V471.89857812500003L623.754 457.750578125Q626.346 455.050578125 627.453 452.80957812500003Q628.56 450.56857812500004 628.56 448.408578125Q628.56 445.330578125 626.778 443.467578125Q624.996 441.604578125 621.972 441.604578125Q618.84 441.604578125 617.004 443.494578125Q615.168 445.384578125 615.168 448.624578125H609.822Q609.93 443.224578125 613.251 440.038578125Q616.572 436.85257812500004 621.972 436.85257812500004Q627.48 436.85257812500004 630.7470000000001 439.98457812500004Q634.014 443.11657812500005 634.014 448.354578125Q634.014 451.216578125 632.502 454.321578125Q630.99 457.426578125 627.372 461.152578125L616.896 471.952578125H634.5V476.812578125ZM657.72 477.35257812500004Q653.9399999999999 477.35257812500004 651.0509999999999 475.89457812500007Q648.162 474.43657812500004 646.542 471.81757812500007Q644.922 469.19857812500004 644.922 465.742578125Q644.922 462.070578125 647.028 459.370578125Q649.134 456.670578125 652.644 456.076578125V455.914578125Q649.62 455.266578125 647.8109999999999 452.863578125Q646.002 450.46057812500004 646.002 447.32857812500004Q646.002 444.250578125 647.487 441.87457812499997Q648.972 439.498578125 651.6179999999999 438.175578125Q654.264 436.85257812500004 657.72 436.85257812500004Q661.1759999999999 436.85257812500004 663.8219999999999 438.175578125Q666.468 439.498578125 667.953 441.87457812499997Q669.438 444.250578125 669.438 447.32857812500004Q669.438 450.46057812500004 667.6289999999999 452.863578125Q665.8199999999999 455.266578125 662.7959999999999 455.914578125V456.076578125Q666.306 456.670578125 668.412 459.370578125Q670.518 462.070578125 670.518 465.742578125Q670.518 469.19857812500004 668.898 471.81757812500007Q667.278 474.43657812500004 664.389 475.89457812500007Q661.5 477.35257812500004 657.72 477.35257812500004ZM657.72 453.916578125Q660.582 453.916578125 662.364 452.18857812500005Q664.146 450.46057812500004 664.146 447.706578125Q664.146 444.952578125 662.364 443.224578125Q660.582 441.49657812500004 657.72 441.49657812500004Q654.858 441.49657812500004 653.076 443.224578125Q651.294 444.952578125 651.294 447.706578125Q651.294 450.46057812500004 653.076 452.18857812500005Q654.858 453.916578125 657.72 453.916578125ZM657.72 472.654578125Q661.068 472.654578125 663.1469999999999 470.683578125Q665.226 468.712578125 665.226 465.580578125Q665.226 462.44857812500004 663.1469999999999 460.47757812500004Q661.068 458.50657812500003 657.72 458.50657812500003Q654.372 458.50657812500003 652.2929999999999 460.47757812500004Q650.2139999999999 462.44857812500004 650.2139999999999 465.580578125Q650.2139999999999 468.712578125 652.2929999999999 470.683578125Q654.372 472.654578125 657.72 472.654578125Z"/></g></svg></div>
+  </div>
+</section>
+
+
+<section class="band">
+  <div class="wrap split">
+    <div class="sticky reveal">
+      <span class="section-num">01 / Where the course starts</span>
+      <h2 class="h-gap">The timeout that already wrote the record.</h2>
+      <div class="prose"><p>A tool call times out. The server had already changed the record before the connection dropped. Retry, and you might finish the job or do it twice. The client can&#39;t tell which from what it got back.</p><p>Most MCP tutorials stop at the first green tool call on one process. This course starts where that demo stops being true: two replicas, a gateway that routes on headers, a human approval in the middle of a call, a token issued for another service. Each of those turns into behavior you write down and prove with a test.</p></div>
+    </div>
+    
+    <figure class="trace reveal">
+  <svg class="trace-wide" viewBox="0 0 640 420" role="img" aria-labelledby="trace-title trace-desc">
+    <title id="trace-title">A retried tool call after a timeout</title>
+    <desc id="trace-desc">The client calls publish_note through the gateway. Replica A commits the note, but the response is lost and the client times out. The client retries, the gateway routes the retry to replica B, and nothing in the request says whether the note already exists.</desc>
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#8b949e"/></marker>
+      <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#58a6ff"/></marker>
+    </defs>
+    <g font-size="11.5" fill="#8b949e" text-anchor="middle" letter-spacing=".5">
+      <text x="70" y="22">CLIENT</text><text x="250" y="22">GATEWAY</text><text x="430" y="22">REPLICA A</text><text x="580" y="22">REPLICA B</text>
+    </g>
+    <g stroke="#30363d" stroke-width="1" stroke-dasharray="2 5">
+      <line x1="70" y1="36" x2="70" y2="410"/><line x1="250" y1="36" x2="250" y2="410"/><line x1="430" y1="36" x2="430" y2="410"/><line x1="580" y1="36" x2="580" y2="410"/>
+    </g>
+    <g font-size="11" fill="#c9d1d9" text-anchor="middle">
+      <line x1="72" y1="64" x2="246" y2="64" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ahb)"/>
+      <text x="80" y="56" text-anchor="start" fill="#e6edf3">tools/call publish_note</text>
+      <line x1="252" y1="92" x2="426" y2="92" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ahb)"/>
+      <rect x="384" y="112" width="92" height="30" rx="5" fill="#3fb9501f" stroke="#3fb950"/>
+      <text x="430" y="131" fill="#3fb950">note written</text>
+      <line x1="428" y1="168" x2="254" y2="168" stroke="#f85149" stroke-width="1.5" stroke-dasharray="5 4"/>
+      <text x="341" y="160" fill="#f85149">response lost</text>
+      <path d="M248 162 l12 12 M260 162 l-12 12" stroke="#f85149" stroke-width="1.8"/>
+      <rect x="14" y="196" width="112" height="30" rx="5" fill="#f0883e1a" stroke="#f0883e"/>
+      <text x="70" y="215" fill="#f0883e">timeout</text>
+      <line x1="72" y1="262" x2="246" y2="262" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ahb)"/>
+      <text x="80" y="254" text-anchor="start" fill="#e6edf3">same call, new request id</text>
+      <line x1="252" y1="290" x2="576" y2="290" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ahb)"/>
+      <rect x="520" y="312" width="120" height="44" rx="5" fill="#f0883e1a" stroke="#f0883e"/>
+      <text x="580" y="330" fill="#f0883e">write it again?</text>
+      <text x="580" y="347" fill="#f0883e">or detect it?</text>
+      <text x="20" y="396" text-anchor="start" fill="#8b949e" font-size="11">The request id changed. The business operation didn't.</text>
+    </g>
+  </svg>
+  <ol class="trace-steps">
+    <li><b>Client → gateway → replica A</b><code>tools/call publish_note</code></li>
+    <li class="ok"><b>Replica A</b>writes the note</li>
+    <li class="bad"><b>Replica A → client</b>the response is lost</li>
+    <li class="warn"><b>Client</b>times out, and can't tell whether the write happened</li>
+    <li><b>Client → gateway → replica B</b>same call, new request id</li>
+    <li class="warn"><b>Replica B</b>write it again, or detect it?</li>
+  </ol>
+  <p class="trace-note">The request id changed. The business operation didn't.</p>
+  <figcaption class="trace-legend"><span><i style="background:#58a6ff"></i>request</span><span><i style="background:#f85149"></i>lost response</span><span><i style="background:#3fb950"></i>committed effect</span><span>Module 2 makes the second write detectable.</span></figcaption>
+</figure>
+  </div>
+</section>
+
+
+
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">02 / Labs</span>
+      <h2>Fourteen labs. One command each.</h2>
+      <p>Every module has a lab, and every lab runs with one command: <code>bash verify.sh</code>. Docker Compose is the only thing you install. Images are pinned by digest, no lab asks for an account or an API key, and each one ships with checks that break the code on purpose, so you can see the tests notice the defect they were written for.</p>
+    </div>
+    <div class="labs reveal">
+      
+      <div class="lab">
+        <span class="n">01</span>
+        <h3>The request contract<code>lab-1-stateless</code></h3>
+        <p>TypeScript and Python servers answer the same contract, directly and through a proxy.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">02</span>
+        <h3>State and retries<code>lab-2-handles</code></h3>
+        <p>Handles carry ownership and expiry, and a repeated business operation gets caught.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">03</span>
+        <h3>Multi round-trip requests<code>lab-3-mrtr</code></h3>
+        <p>An approval is bound to the exact operation it authorizes. Refusal and replay both fail closed.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">04</span>
+        <h3>Cacheable results<code>lab-4-caching</code></h3>
+        <p>Cached results stay partitioned by caller, measured on a workload you can rerun.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">05</span>
+        <h3>Gateway policy<code>lab-5-gateway</code></h3>
+        <p>Routing headers have to match the body, and tenant limits use identity the gateway verified.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">06</span>
+        <h3>Authorization boundaries<code>lab-6-auth</code></h3>
+        <p>Issuer, audience and scope checks reject exactly what they should.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">07</span>
+        <h3>Durable tasks<code>lab-7-tasks</code></h3>
+        <p>A long-running task survives a restart and its whole lifecycle stays observable.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">08</span>
+        <h3>Operate the service<code>lab-8-operations</code></h3>
+        <p>Readiness, replica replacement and a rehearsed rollback behind a load balancer.</p>
+      </div>
+      
+      <div class="lab">
+        <span class="n">09</span>
+        <h3>Migration<code>lab-9-migration</code></h3>
+        <p>Compatibility fixtures decide what a staged rollout is allowed to promote.</p>
+      </div>
+      
+      <div class="lab bonus">
+        <span class="n">10</span>
+        <h3>Agent security<code>lab-10-trust</code></h3>
+        <p>A host refuses an injected export, pins the tools it approved and ignores a stranger&#39;s annotations.</p>
+      </div>
+      
+      <div class="lab bonus">
+        <span class="n">11</span>
+        <h3>Resources and prompts<code>lab-11-resources</code></h3>
+        <p>A hidden resource and a missing one look the same from outside. Completion gives nothing away.</p>
+      </div>
+      
+      <div class="lab bonus">
+        <span class="n">12</span>
+        <h3>Production gaps<code>lab-12-production</code></h3>
+        <p>One W3C trace crosses the gateway, JWTs validate in the right order, a limit holds across processes.</p>
+      </div>
+      
+      <div class="lab bonus">
+        <span class="n">13</span>
+        <h3>Decisions and costs<code>lab-13-decisions</code></h3>
+        <p>An executable guide maps each need to a pattern, what it costs and the lab that measured it.</p>
+      </div>
+      
+      <div class="lab bonus">
+        <span class="n">14</span>
+        <h3>The reference server<code>lab-14-reference</code></h3>
+        <p>Two replicas hold every requirement at once, plus a conformance suite you can point at your own server.</p>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+
+<section class="band">
+  <div class="wrap split">
+    <div class="sticky reveal">
+      <span class="section-num">03 / Real output</span>
+      <h2 class="h-gap">Point it at your own server.</h2>
+      <p class="prose">The last module ships <code>conformance.py</code>, a black-box check of the revision's requirements. It only sends requests a client is allowed to send, so it doesn't need your code. This is the reference server from lab 14 passing it on two local replicas.</p>
+    </div>
+    <div class="reveal">
+      <div class="term replay">
+  <div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="title">lab-14-reference · python3 conformance.py · run on 2026-10-11</span></div>
+  <div class="term-body" role="img" aria-label="python3 conformance.py: OK  14 of 14 rows hold">
+    <div class="line" style="--i:0"><span class="prompt">$</span> <span class="cmd">python3 conformance.py</span></div>
+    <div class="line row" style="--i:1"><span class="pass">PASS</span><span>An Origin that is not allowed gets 403, with no id in the body <span class="sec">Streamable HTTP › Security</span></span></div>
+    <div class="line row" style="--i:2"><span class="pass">PASS</span><span>A request id is never null <span class="sec">Basic › Messages</span></span></div>
+    <div class="line row" style="--i:3"><span class="pass">PASS</span><span>Mcp-Method that disagrees with the body gets 400 and -32020 <span class="sec">Streamable HTTP › Server validation</span></span></div>
+    <div class="line row" style="--i:4"><span class="pass">PASS</span><span>Mcp-Name that disagrees with the body gets 400 and -32020 <span class="sec">Streamable HTTP › Server validation</span></span></div>
+    <div class="line row" style="--i:5"><span class="pass">PASS</span><span>An unsupported version gets -32022 listing the supported ones <span class="sec">Versioning</span></span></div>
+    <div class="line row" style="--i:6"><span class="pass">PASS</span><span>server/discover answers on the first request, with no initialize <span class="sec">Server › Discovery</span></span></div>
+    <div class="line row" style="--i:7"><span class="pass">PASS</span><span>Discovery and list results carry ttlMs and cacheScope <span class="sec">Server › Caching</span></span></div>
+    <div class="line row" style="--i:8"><span class="pass">PASS</span><span>Every result names its resultType <span class="sec">Basic › ResultType</span></span></div>
+    <div class="line row" style="--i:9"><span class="pass">PASS</span><span>An unknown tool is a JSON-RPC error (-32602), not a tool result <span class="sec">Server › Tools › Errors</span></span></div>
+    <div class="line row" style="--i:10"><span class="pass">PASS</span><span>An unknown method gets -32601 <span class="sec">Basic › Messages</span></span></div>
+    <div class="line row" style="--i:11"><span class="pass">PASS</span><span>A request without a token gets 401 naming the resource metadata <span class="sec">Authorization › Discovery</span></span></div>
+    <div class="line row" style="--i:12"><span class="pass">PASS</span><span>Protected resource metadata names this resource <span class="sec">Authorization › Discovery (RFC 9728)</span></span></div>
+    <div class="line row" style="--i:13"><span class="pass">PASS</span><span>A token for another resource gets 401 <span class="sec">Authorization › Token handling</span></span></div>
+    <div class="line row" style="--i:14"><span class="pass">PASS</span><span>A notification gets 202 with no body, or an HTTP error if refused <span class="sec">Streamable HTTP › Sending messages</span></span></div>
+    
+    <div class="line gap" style="--i:16"><span class="ok">OK  14 of 14 rows hold</span></div>
+    <div class="line" style="--i:17"><span class="prompt">$</span> <span class="cursor" aria-hidden="true"></span></div>
+  </div>
+</div>
+    </div>
+  </div>
+</section>
+
+
+<section id="curriculum">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">04 / Curriculum</span>
+      <h2>14 modules, 57 lessons.</h2>
+      <p>Nine core modules take one server from its first request to a rehearsed rollback. Five bonus modules go past the core contract. Open any module to see its lessons.</p>
+    </div>
+    <div class="curriculum reveal">
+      
+      <details class="module" open>
+        <summary>
+          <span class="num">01</span>
+          <h3>The Request Contract</h3>
+          <span class="meta">7 lessons · 63 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">1.0</span><span><span class="t">Welcome, and how the labs in this course run</span><span class="d">The kind of failure the course is built around, what you will build for revision 2026-07-28, and how every lab runs locally with Docker Compose.</span></span><span class="m">3 min</span></li>
+          
+          <li><span class="id">1.1</span><span><span class="t">Why a working tool call can fail on another replica</span><span class="d">Diagnose a request whose result depends on which replica receives it. Identify the evidence needed to separate request context from application state.</span></span><span class="m">9 min</span></li>
+          
+          <li><span class="id">1.2</span><span><span class="t">Read an MCP request from headers to tool arguments</span><span class="d">Inspect a self-contained request and distinguish routing metadata from tool arguments. Locate the boundaries where contradictory input can appear.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">1.3</span><span><span class="t">Diagnose a rejected call without guessing at the server</span><span class="d">Read request and response examples to distinguish transport, protocol, and tool failures. Establish what a client trace can prove and what needs server evidence.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">1.4</span><span><span class="t">Build the TypeScript server and run its contract tests</span><span class="tag tag-lab">Lab</span><span class="d">Start the local Compose lab and implement tool discovery and invocation in TypeScript. Exercise both valid messages and malformed requests.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">1.5</span><span><span class="t">Build the Python server against the same contract</span><span class="tag tag-lab">Lab</span><span class="d">Implement the request contract in Python and run the shared behavioral fixtures. Compare responses across both language implementations.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">1.6</span><span><span class="t">Test discovery and version handling across replicas</span><span class="tag tag-lab">Lab</span><span class="d">Implement server discovery and capability checks, then exercise supported and unsupported request versions. Send calls through alternating replicas to test request independence.</span></span><span class="m">10 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">02</span>
+          <h3>State and Retries</h3>
+          <span class="meta">4 lessons · 44 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">2.1</span><span><span class="t">A timeout does not tell you whether the write happened</span><span class="d">Follow an ambiguous timeout through a business operation and its response. Identify why a request identifier alone cannot establish whether retrying will repeat the effect.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">2.2</span><span><span class="t">Implement handles with ownership and expiry checks</span><span class="tag tag-lab">Lab</span><span class="d">Build a tool workflow that returns an explicit handle and validates each later use. Test unknown handles, expired handles, and requests from another owner.</span></span><span class="m">12 min</span></li>
+          
+          <li><span class="id">2.3</span><span><span class="t">Move application state beyond a single process</span><span class="tag tag-lab">Lab</span><span class="d">Compare process-local state with a shared persistence implementation. Restart a replica and test which workflow guarantees the storage design preserves.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">2.4</span><span><span class="t">Make duplicate business operations detectable</span><span class="tag tag-lab">Lab</span><span class="d">Implement application-level idempotency with atomic persistence and a defined retention window. Test duplicate submissions, conflicting payloads, and concurrent attempts.</span></span><span class="m">11 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">03</span>
+          <h3>Multi Round-Trip Requests</h3>
+          <span class="meta">4 lessons · 44 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">3.1</span><span><span class="t">The missing approval that blocks a tool call</span><span class="d">Trace a tool operation that needs user input before it can finish. Identify the approval boundary and the failure cases a resumable workflow must address.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">3.2</span><span><span class="t">Implement input requests and the client retry</span><span class="tag tag-lab">Lab</span><span class="d">Build the input-required response and the client retry carrying input responses. Test request correlation and the distinction between request IDs and workflow state.</span></span><span class="m">12 min</span></li>
+          
+          <li><span class="id">3.3</span><span><span class="t">Bind approval to the operation it authorizes</span><span class="tag tag-lab">Lab</span><span class="d">Validate continuation state against the caller and proposed operation. Reject altered arguments, expired approval, and reuse after completion.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">3.4</span><span><span class="t">Test refusal, abandonment, and interrupted approval</span><span class="tag tag-lab">Lab</span><span class="d">Exercise approval refusal and abandoned workflows with a local client. Restart the service during a round trip and verify that unapproved actions remain uncommitted.</span></span><span class="m">11 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">04</span>
+          <h3>Cacheable Results</h3>
+          <span class="meta">4 lessons · 42 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">4.1</span><span><span class="t">Implement cache hints on lists and resource reads</span><span class="tag tag-lab">Lab</span><span class="d">Add cache metadata to tool, prompt, and resource results in the local server. Test how the client interprets expiry and cache scope.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">4.2</span><span><span class="t">Partition cached results by caller and permissions</span><span class="tag tag-lab">Lab</span><span class="d">Build cache keys that reflect the authorization context of a result. Exercise two callers and a permission change to detect inappropriate reuse.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">4.3</span><span><span class="t">Keep list ordering and pagination predictable</span><span class="tag tag-lab">Lab</span><span class="d">Implement deterministic list ordering and pagination fixtures. Test repeated requests and catalog changes without confusing stable ordering with a frozen dataset.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">4.4</span><span><span class="t">Measure cache behavior without inventing a speedup</span><span class="tag tag-lab">Lab</span><span class="d">Compare cached and uncached runs under a documented workload. Report latency, upstream calls, and stale-result behavior alongside the limits of the measurement.</span></span><span class="m">11 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">05</span>
+          <h3>Gateway Policy</h3>
+          <span class="meta">4 lessons · 42 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">5.1</span><span><span class="t">Route by method and name, then check the body</span><span class="tag tag-lab">Lab</span><span class="d">Route requests through a local gateway using method and name headers. Test server rejection when routing metadata disagrees with the message body.</span></span><span class="m">9 min</span></li>
+          
+          <li><span class="id">5.2</span><span><span class="t">Expose selected tool arguments through routing headers</span><span class="tag tag-lab">Lab</span><span class="d">Declare a routing parameter with x-mcp-header and implement its corresponding header handling. Check missing values and inconsistent representations.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">5.3</span><span><span class="t">Test header encoding and sensitive parameter boundaries</span><span class="tag tag-lab">Lab</span><span class="d">Exercise parameter encoding with a fixture table and reject invalid cases. Audit which argument values would become visible to gateway logs.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">5.4</span><span><span class="t">Apply tenant limits using verified request identity</span><span class="tag tag-lab">Lab</span><span class="d">Implement per-tenant rate limits and regional routing in the local gateway. Test spoofed tenant metadata and calls that exceed a configured limit.</span></span><span class="m">11 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">06</span>
+          <h3>Authorization Boundaries</h3>
+          <span class="meta">4 lessons · 44 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">6.1</span><span><span class="t">Run a local authorization flow for an MCP client</span><span class="tag tag-lab">Lab</span><span class="d">Start a local authorization server, client, and protected resource server. Trace resource discovery and the authorization-code flow with PKCE.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">6.2</span><span><span class="t">Validate issuer identity before exchanging a code</span><span class="tag tag-lab">Lab</span><span class="d">Check the authorization response issuer against the expected server. Test missing or mismatched issuer data and credentials bound to another issuer.</span></span><span class="m">12 min</span></li>
+          
+          <li><span class="id">6.3</span><span><span class="t">Configure client identity with metadata documents</span><span class="tag tag-lab">Lab</span><span class="d">Serve a client metadata document in the local environment and validate its identity and redirect configuration. Distinguish local fixture setup from deployment requirements.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">6.4</span><span><span class="t">Enforce audience and scopes at the resource boundary</span><span class="tag tag-lab">Lab</span><span class="d">Validate tokens and apply permission checks to tool discovery and invocation. Reject wrong-audience, expired, and insufficient-scope requests with targeted tests.</span></span><span class="m">11 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">07</span>
+          <h3>Durable Tasks and Subscriptions</h3>
+          <span class="meta">4 lessons · 44 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">7.1</span><span><span class="t">Check extension support before starting a task</span><span class="tag tag-lab">Lab</span><span class="d">Implement explicit capability checks for the tasks extension. Test unsupported clients and separate protocol requirements from application policy.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">7.2</span><span><span class="t">Persist a task and poll its lifecycle</span><span class="tag tag-lab">Lab</span><span class="d">Create an export task with persisted state and a polling client. Verify status transitions and result retrieval across a worker restart.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">7.3</span><span><span class="t">Handle task input, cancellation, and competing workers</span><span class="tag tag-lab">Lab</span><span class="d">Implement task updates and cancellation with explicit transition checks. Test repeated input and competing workers against the persisted task state.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">7.4</span><span><span class="t">Subscribe to selected notifications and recover disconnects</span><span class="tag tag-lab">Lab</span><span class="d">Build an opt-in notification listener and filter events by subscription and caller. Recover authoritative task state after disconnecting the stream.</span></span><span class="m">12 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">08</span>
+          <h3>Operate the Service</h3>
+          <span class="meta">5 lessons · 60 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">8.1</span><span><span class="t">The healthy replica that still fails a tool call</span><span class="d">Diagnose a service that passes a basic health check while a tool dependency fails. Identify the evidence needed to distinguish process health from request readiness.</span></span><span class="m">10 min</span></li>
+          
+          <li><span class="id">8.2</span><span><span class="t">Assemble the service behind a local load balancer</span><span class="tag tag-lab">Lab</span><span class="d">Run an independent capstone stack with authorization, caching, gateway policy, and durable work. Exercise the end-to-end request path through multiple replicas.</span></span><span class="m">12 min</span></li>
+          
+          <li><span class="id">8.3</span><span><span class="t">Test readiness, graceful shutdown, and replica replacement</span><span class="tag tag-lab">Lab</span><span class="d">Introduce dependency failures and replace a running replica during a workload. Test readiness decisions, draining behavior, and bounded request timeouts.</span></span><span class="m">13 min</span></li>
+          
+          <li><span class="id">8.4</span><span><span class="t">Trace tool latency, failures, and resource cost</span><span class="tag tag-lab">Lab</span><span class="d">Add correlated logs and per-tool metrics with controlled label cardinality. Calculate workload cost from measured resource usage and explicitly supplied rates.</span></span><span class="m">12 min</span></li>
+          
+          <li><span class="id">8.5</span><span><span class="t">Rehearse a release and prove the rollback path</span><span class="tag tag-lab">Lab</span><span class="d">Run a local deployment rehearsal with acceptance checks and a deliberately failing candidate. Restore the previous service version and verify application state compatibility.</span></span><span class="m">13 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module">
+        <summary>
+          <span class="num">09</span>
+          <h3>Migration and Revision Watch</h3>
+          <span class="meta">6 lessons · 52 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">9.1</span><span><span class="t">What the 2026-07-28 revision changes in a running server</span><span class="d">Compare the earlier handshake and session model with the revision&#39;s request contract. Distinguish removed mechanisms from deprecated features that still have a compatibility window.</span></span><span class="m">8 min</span></li>
+          
+          <li><span class="id">9.2</span><span><span class="t">Inventory transport and client compatibility before migration</span><span class="tag tag-lab">Lab</span><span class="d">Run compatibility fixtures against an earlier server and its clients. Record transport, session, and capability assumptions before changing the implementation.</span></span><span class="m">9 min</span></li>
+          
+          <li><span class="id">9.3</span><span><span class="t">Migrate session state and callbacks with regression tests</span><span class="tag tag-lab">Lab</span><span class="d">Convert a provided implementation to explicit handles and request-driven input handling. Preserve business behavior while replacing protocol-specific fixtures.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">9.4</span><span><span class="t">Review registration, sampling, roots, and logging dependencies</span><span class="tag tag-lab">Lab</span><span class="d">Inventory dependencies on deprecated registration and client features. Test a client metadata migration and distinguish interim compatibility from the target architecture.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">9.5</span><span><span class="t">Plan staged rollout against the published deprecation policy</span><span class="tag tag-lab">Lab</span><span class="d">Build a rollout plan from tested client compatibility and dated primary sources. Distinguish the minimum deprecation window from an announced removal date and define rollback triggers.</span></span><span class="m">11 min</span></li>
+          
+          <li><span class="id">9.6</span><span><span class="t">What you can now show, and where to take it next</span><span class="d">From a call that failed on one replica to a rollout plan with a stop condition: the habit that connects them, and how it carries to a service this course never saw.</span></span><span class="m">2 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module bonus">
+        <summary>
+          <span class="num">10</span>
+          <h3>Agent Security<span class="tag tag-bonus">Bonus</span></h3>
+          <span class="meta">4 lessons · 23 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">10.1</span><span><span class="t">Tool output is data, not instructions</span><span class="tag tag-lab">Lab</span><span class="d">Watch an injected document drive a naive host into an export, then stop it in the host: catalog, schema, egress allowlist and a person&#39;s confirmation, in that order.</span></span><span class="m">6 min</span></li>
+          
+          <li><span class="id">10.2</span><span><span class="t">Pin the tool definitions you approved</span><span class="tag tag-lab">Lab</span><span class="d">You approved a server&#39;s tools last week, and this morning one description asks the model to export the notebook first. Pin what you approved, quarantine what changed and keep two servers&#39; same-named tools apart.</span></span><span class="m">6 min</span></li>
+          
+          <li><span class="id">10.3</span><span><span class="t">Least privilege on the server you run</span><span class="tag tag-lab">Lab</span><span class="d">Your server can&#39;t choose the host in front of it, so its guarantees can&#39;t depend on one. Validate inputs, grant by scope, rate limit, confine reads to a root and sanitize what goes back out.</span></span><span class="m">6 min</span></li>
+          
+          <li><span class="id">10.4</span><span><span class="t">Prove each control by removing it</span><span class="tag tag-lab">Lab</span><span class="d">A green suite can pass with a control deleted. Remove each check in a throwaway copy, run only the attack written for it and watch it fail on an assertion, not a crash.</span></span><span class="m">5 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module bonus">
+        <summary>
+          <span class="num">11</span>
+          <h3>Resources and Prompts<span class="tag tag-bonus">Bonus</span></h3>
+          <span class="meta">3 lessons · 15 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">11.1</span><span><span class="t">Resources a caller can read safely</span><span class="tag tag-lab">Lab</span><span class="d">Data the host reads shouldn&#39;t hide behind a tool the model has to call. Expose it as a resource, check access on every read and never confirm a URI the caller isn&#39;t allowed to see.</span></span><span class="m">5 min</span></li>
+          
+          <li><span class="id">11.2</span><span><span class="t">Hear about a resource change, then read it again</span><span class="tag tag-lab">Lab</span><span class="d">A cached runbook can be wrong for half a minute. Listen for changes on a request that stays open, then read the resource again instead of trusting what the notification said.</span></span><span class="m">5 min</span></li>
+          
+          <li><span class="id">11.3</span><span><span class="t">Prompts and completion that don&#39;t leak</span><span class="tag tag-lab">Lab</span><span class="d">A slash command that pastes a note into its instructions rebuilds prompt injection by hand. Keep the note apart from the instruction, and filter completion so typing a prefix can&#39;t reveal a note you can&#39;t read.</span></span><span class="m">5 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module bonus">
+        <summary>
+          <span class="num">12</span>
+          <h3>Production Gaps<span class="tag tag-bonus">Bonus</span></h3>
+          <span class="meta">4 lessons · 18 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">12.1</span><span><span class="t">Carry one trace across the gateway</span><span class="tag tag-lab">Lab</span><span class="d">Nine seconds, two logs and nothing tying them together. Carry W3C trace context through the request metadata so the gateway and the server land in one trace your existing tools already read.</span></span><span class="m">5 min</span></li>
+          
+          <li><span class="id">12.2</span><span><span class="t">Validate tokens from a real identity provider</span><span class="tag tag-lab">Lab</span><span class="d">A hosted provider hands you signed JWTs and nobody to ask. Check the signature first, pin the algorithm, bind the audience and refresh keys after a rotation without turning your server into a load generator.</span></span><span class="m">5 min</span></li>
+          
+          <li><span class="id">12.3</span><span><span class="t">A limit that holds across replicas</span><span class="tag tag-lab">Lab</span><span class="d">Five calls a minute becomes ten the day you add a replica. Move the window into shared storage, take the write lock first and prove it with four processes racing for the same tenant.</span></span><span class="m">4 min</span></li>
+          
+          <li><span class="id">12.4</span><span><span class="t">Progress and cancellation on one stream</span><span class="tag tag-lab">Lab</span><span class="d">Someone hits cancel on a long export. Send progress on the request&#39;s own stream, treat a closed stream as cancellation and roll back half a job so nothing is left behind.</span></span><span class="m">4 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module bonus">
+        <summary>
+          <span class="num">13</span>
+          <h3>Decisions and Costs<span class="tag tag-bonus">Bonus</span></h3>
+          <span class="meta">1 lesson · 4 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">13.1</span><span><span class="t">Choose a pattern by what it costs</span><span class="tag tag-lab">Lab</span><span class="d">&#34;It felt right&#34; doesn&#39;t survive a design review. Map each need to the pattern this course built for it, what it costs and the test that shows it holds.</span></span><span class="m">4 min</span></li>
+          
+        </ol>
+      </details>
+      
+      <details class="module bonus">
+        <summary>
+          <span class="num">14</span>
+          <h3>The Reference Server<span class="tag tag-bonus">Bonus</span></h3>
+          <span class="meta">3 lessons · 12 min</span>
+          <svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </summary>
+        <ol>
+          
+          <li><span class="id">14.1</span><span><span class="t">One path for every request</span><span class="tag tag-lab">Lab</span><span class="d">Thirteen labs, one server. Every request walks the same ten checks in the same order, and the cheap refusals come before anything that touches a secret or your data.</span></span><span class="m">4 min</span></li>
+          
+          <li><span class="id">14.2</span><span><span class="t">Any replica, any request</span><span class="tag tag-lab">Lab</span><span class="d">A person confirms a delete and the answer lands on the other replica. Keep nothing in the process, sign the approval and make it single-use so it works anywhere and can&#39;t be replayed.</span></span><span class="m">4 min</span></li>
+          
+          <li><span class="id">14.3</span><span><span class="t">A client you didn&#39;t write</span><span class="tag tag-lab">Lab</span><span class="d">Your tests share every assumption your server makes. Point the official MCP Inspector at the reference server and see what a stranger&#39;s client sends, what it gets refused and what that costs.</span></span><span class="m">4 min</span></li>
+          
+        </ol>
+      </details>
+      
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap cols">
+    <div class="reveal">
+      <span class="section-num">05 / Fit</span>
+      <h2 class="h-gap-sm">Who it&#39;s for</h2>
+      <ul class="ticks"><li>Backend engineers building MCP servers for application tools and data access</li><li>Platform engineers responsible for gateways, authorization, and service operation</li><li>Engineers investigating retries, caller isolation, and replica behavior in MCP deployments</li><li>Developers maintaining an existing MCP integration who need a tested migration path</li></ul>
+    </div>
+    <div class="reveal">
+      <span class="section-num spacer" aria-hidden="true">&nbsp;</span>
+      <h2 class="h-gap-sm">What you need</h2>
+      <ul class="ticks"><li>Working knowledge of Python, including running tests and reading error output; TypeScript helps in the first module but is not required</li><li>Comfort reading HTTP requests, JSON messages, and command-line output</li><li>A computer able to run Docker Compose and several local containers</li><li>Internet access to download container images and pinned dependencies during setup</li></ul>
+    </div>
+  </div>
+</section>
+
+
+<section class="tight">
+  <div class="wrap">
+    <div class="notes reveal">
+      <div><h3>The voice is synthetic</h3><p>Narration uses a synthetic voice and AI helped draft the material. The technical side is held to a stricter rule: 224 claim records name the spec section they come from and the date they were checked, and a lesson&#39;s lab has to pass before its narration is written.</p></div><div><h3>No cloud bill</h3><p>Everything runs on your machine in Docker. No cloud account, no API key, no model provider. You&#39;ll want a computer that can run a few containers at once.</p></div><div><h3>Dated, on purpose</h3><p>MCP changes. The course says which revision it covers, which claims were checked on which date, and has a whole module on migrating from 2025-11-25.</p></div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="faq">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="section-num">06 / Questions</span>
+      <h2>Before you enroll</h2>
+    </div>
+    <div class="faq reveal">
+      
+      <details><summary>Which version of MCP does the course cover?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>Revision 2026-07-28, the one without the initialization handshake or protocol sessions. Module 9 covers migrating a server written for 2025-11-25, including the features that are deprecated but still in the spec.</p></details>
+      
+      <details><summary>Do I need to know TypeScript?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>No. Python carries the course. Module 1 builds the same request contract in TypeScript too, so you can see which rules come from the protocol and which from a language, but you can follow it reading the Python side only.</p></details>
+      
+      <details><summary>Do I need an API key or a cloud account?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>No. Every lab runs locally with Docker Compose. The authorization labs bring their own local authorization server, and nothing calls a model provider.</p></details>
+      
+      <details><summary>Is this an intro to MCP?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>It&#39;s intermediate. You should be comfortable reading HTTP requests, JSON and test output. If you&#39;ve built one MCP tool and wondered what happens behind a load balancer, you&#39;re the person it was written for.</p></details>
+      
+      <details><summary>How long is it?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>57 lessons and about seven hours of video, plus the labs, which take longer than the videos if you do the challenges. Nine core modules, then five bonus modules on agent security, resources and prompts, production gaps, design trade-offs and a reference server.</p></details>
+      
+      <details><summary>Who&#39;s behind Runs Clean?<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><p>Runs Clean is a small publisher of engineering courses. There&#39;s no invented instructor with a stock photo. The courses are published under the brand, and what we put forward instead of a résumé is the standard: tested labs, sourced claims, dated material.</p></details>
+      
+    </div>
+  </div>
+</section>
+
+
+<section class="band">
+  <div class="wrap cta-final reveal">
+    <span class="section-num">07 / Start</span>
+    <h2 class="h-gap-top">Build the server you&#39;d trust behind a load balancer.</h2>
+    <p>The course opens on Udemy shortly. Leave your email with the free cheatsheet and you'll hear the day it does.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/mcp-2026-migration/#get-the-cheatsheet">Get notified at launch <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a class="btn btn-ghost" href="/mcp-2026-migration/">Read the free migration guide</a>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-pitch">
+        <p class="foot-tagline">Verified against code that runs.</p>
+        <p class="foot-sub">Engineering courses on the production layer of AI infrastructure. One email when a course or a spec revision is worth your time, nothing in between.</p>
+      </div>
+      <div class="foot-form"><form class="form form-compact" action="https://app.kit.com/forms/10041617/subscriptions" method="post" accept-charset="UTF-8">
+  <label class="field" for="email-footer"><span class="sr">Work or personal email</span>
+    <input id="email-footer" type="email" name="email_address" autocomplete="email" required placeholder="Your work email" inputmode="email" spellcheck="false" autocapitalize="off">
+  </label>
+  
+  <label class="consent"><input type="checkbox" name="consent" value="yes" required>
+    <span>Email me the free cheatsheet and the occasional update. One click unsubscribes. <a href="/privacy/">Privacy</a>.</span>
+  </label>
+  <button class="btn btn-primary" type="submit">Subscribe <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  
+  
+</form></div>
+    </div>
+    <div class="foot-grid">
+      <div>
+        <h4>Courses</h4>
+        <ul>
+          <li><a href="/courses/mcp-production/">MCP Production</a></li>
+          <li><a href="/courses/">All courses</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Free</h4>
+        <ul>
+          <li><a href="/mcp-2026-migration/">MCP 2026 migration guide</a></li><li><a href="/mcp-2026-migration/#get-the-cheatsheet">Migration cheatsheet (PDF)</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Runs Clean</h4>
+        <ul>
+          <li><a href="/about/">How courses are made</a></li>
+          
+          <li><a href="mailto:hello@runsclean.com">Contact</a></li>
+          <li><a href="/privacy/">Privacy</a></li>
+        </ul>
+      </div>
+      <div class="foot-status">
+        <h4>Status</h4>
+        <p class="status-line"><span class="dot" aria-hidden="true"></span>exit 0</p>
+        <p class="status-sub">This site is built by a script that refuses to publish a broken link, a page wider than a phone, or a failing lab run. Last build 13 October 2026.</p>
+      </div>
+    </div>
+    <div class="foot-base">
+      <span>© 2026 Runs Clean</span>
+      <span>Model Context Protocol is an open specification. Runs Clean is not affiliated with its maintainers.</span>
+    </div>
+  </div>
+  <div class="foot-giant" aria-hidden="true"><div class="wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1684 227" role="img" aria-label="Runs Clean"><title>Runs Clean</title><path fill="#e6edf3" fill-rule="evenodd" d="M65.83,0.00 a65.83,65.83 0 0 1 65.83,65.83 v95.34 a65.83,65.83 0 0 1 -65.83,65.83 a65.83,65.83 0 0 1 -65.83,-65.83 v-95.34 a65.83,65.83 0 0 1 65.83,-65.83z M65.83,36.32 a29.51,29.51 0 0 1 29.51,29.51 v95.34 a29.51,29.51 0 0 1 -29.51,29.51 a29.51,29.51 0 0 1 -29.51,-29.51 v-95.34 a29.51,29.51 0 0 1 29.51,-29.51z"/><rect x="152.08" y="190.67" width="90.80" height="36.32" rx="4.54" fill="#58a6ff"/><path fill="#e6edf3" d="M354.62460937500003 226.9921875V72.3046875H390.22031250000003V97.939453125H390.65976562500003Q394.90781250000003 84.755859375 404.06308593750003 77.7978515625Q413.21835937500003 70.83984375 428.15976562500003 70.83984375Q431.96835937500003 70.83984375 434.97128906250003 71.0595703125Q437.97421875000003 71.279296875 440.17148437500003 71.42578125V104.23828125Q438.12070312500003 103.9453125 433.14023437500003 103.505859375Q428.15976562500003 103.06640625 422.73984375000003 103.06640625Q409.55625000000003 103.06640625 400.54746093750003 112.1484375Q391.53867187500003 121.23046875 391.53867187500003 139.39453125V226.9921875ZM509.88984375 230.068359375Q485.5734375 230.068359375 470.192578125 214.39453125Q454.81171875 198.720703125 454.81171875 168.984375V72.3046875H491.72578125V163.125Q491.72578125 180.1171875 499.92890625 188.90625Q508.13203125 197.6953125 522.926953125 197.6953125Q537.575390625 197.6953125 547.1701171875 188.61328125Q556.76484375 179.53125 556.76484375 159.755859375V72.3046875H593.825390625V226.9921875H557.497265625V203.26171875Q541.2375 230.068359375 509.88984375 230.068359375ZM656.951953125 139.541015625V226.9921875H620.037890625V72.3046875H656.366015625V96.03515625Q672.479296875 69.228515625 703.826953125 69.228515625Q728.143359375 69.228515625 743.5974609375 84.90234375Q759.0515625 100.576171875 759.0515625 130.3125V226.9921875H721.991015625V136.171875Q721.991015625 119.1796875 713.787890625 110.390625Q705.584765625 101.6015625 690.78984375 101.6015625Q676.287890625 101.6015625 666.619921875 110.68359375Q656.951953125 119.765625 656.951953125 139.541015625ZM845.90859375 230.654296875Q817.637109375 230.654296875 798.6673828125 217.3974609375Q779.69765625 204.140625 777.93984375 179.23828125H814.414453125Q815.586328125 190.517578125 823.496484375 196.7431640625Q831.406640625 202.96875 845.32265625 202.96875Q858.652734375 202.96875 866.3431640625 197.6953125Q874.03359375 192.421875 874.03359375 184.21875Q874.03359375 177.1875 868.320703125 172.939453125Q862.6078125 168.69140625 852.93984375 166.640625L826.57265625 161.220703125Q781.45546875 151.845703125 781.45546875 116.54296875Q781.45546875 95.15625 798.44765625 82.0458984375Q815.43984375 68.935546875 843.711328125 68.935546875Q871.836328125 68.935546875 889.4876953125 82.7783203125Q907.1390625 96.62109375 907.725 120.498046875H873.008203125Q872.715234375 110.09765625 864.9515625 103.359375Q857.187890625 96.62109375 844.590234375 96.62109375Q832.43203125 96.62109375 825.40078125 102.041015625Q818.36953125 107.4609375 818.36953125 115.37109375Q818.36953125 122.255859375 823.789453125 126.5771484375Q829.209375 130.8984375 838.87734375 133.095703125L866.709375 138.80859375Q889.707421875 143.642578125 900.6205078125 154.04296875Q911.53359375 164.443359375 911.53359375 181.435546875Q911.53359375 196.5234375 903.1107421875 207.5830078125Q894.687890625 218.642578125 879.89296875 224.6484375Q865.098046875 230.654296875 845.90859375 230.654296875ZM1059.759375 230.5078125Q1037.20078125 230.5078125 1020.1353515625001 220.25390625Q1003.0699218750001 210.0 993.6216796875001 191.8359375Q984.1734375000001 173.671875 984.1734375000001 149.794921875Q984.1734375000001 125.91796875 993.6216796875001 107.6806640625Q1003.0699218750001 89.443359375 1020.1353515625001 79.1162109375Q1037.20078125 68.7890625 1059.759375 68.7890625Q1079.241796875 68.7890625 1094.476171875 76.3330078125Q1109.710546875 83.876953125 1119.0123046875 97.1337890625Q1128.3140625 110.390625 1129.925390625 127.67578125H1093.74375Q1091.69296875 115.224609375 1083.1236328125 107.3876953125Q1074.554296875 99.55078125 1060.198828125 99.55078125Q1042.034765625 99.55078125 1031.780859375 113.173828125Q1021.5269531250001 126.796875 1021.5269531250001 149.794921875Q1021.5269531250001 172.646484375 1031.780859375 186.1962890625Q1042.034765625 199.74609375 1060.198828125 199.74609375Q1074.70078125 199.74609375 1082.757421875 192.0556640625Q1090.8140625 184.365234375 1093.45078125 171.474609375H1129.925390625Q1128.60703125 188.466796875 1119.3052734375 201.796875Q1110.003515625 215.126953125 1094.6958984375 222.8173828125Q1079.38828125 230.5078125 1059.759375 230.5078125ZM1184.9953125000002 8.73046875V226.9921875H1148.0812500000002V8.73046875ZM1279.4695312500003 230.5078125Q1256.3250000000003 230.5078125 1239.3328125000003 220.107421875Q1222.3406250000003 209.70703125 1213.1853515625003 191.4697265625Q1204.0300781250003 173.232421875 1204.0300781250003 149.794921875Q1204.0300781250003 126.2109375 1213.4783203125003 107.9736328125Q1222.9265625000003 89.736328125 1239.6257812500003 79.2626953125Q1256.3250000000003 68.7890625 1278.0046875000003 68.7890625Q1300.2703125000003 68.7890625 1316.9695312500003 79.04296875Q1333.6687500000003 89.296875 1342.8972656250003 107.3876953125Q1352.1257812500003 125.478515625 1352.1257812500003 149.208984375V159.31640625H1240.2117187500003Q1240.9441406250003 178.212890625 1251.3445312500003 189.78515625Q1261.7449218750003 201.357421875 1280.3484375000003 201.357421875Q1294.2644531250003 201.357421875 1303.3464843750003 195.2783203125Q1312.4285156250003 189.19921875 1315.6511718750003 179.23828125H1350.2214843750003Q1347.2917968750003 194.326171875 1337.4041015625003 205.8984375Q1327.5164062500003 217.470703125 1312.5750000000003 223.9892578125Q1297.6335937500003 230.5078125 1279.4695312500003 230.5078125ZM1240.5046875000003 133.828125H1316.6765625000003Q1314.9187500000003 117.275390625 1304.7380859375003 107.6806640625Q1294.5574218750003 98.0859375 1278.5906250000003 98.0859375Q1262.4773437500003 98.0859375 1252.4431640625003 107.6806640625Q1242.4089843750003 117.275390625 1240.5046875000003 133.828125ZM1419.7933593750004 229.482421875Q1396.6488281250004 229.482421875 1381.4876953125004 217.8369140625Q1366.3265625000004 206.19140625 1366.3265625000004 183.046875Q1366.3265625000004 165.46875 1374.8958984375004 155.8740234375Q1383.4652343750004 146.279296875 1397.3080078125004 141.884765625Q1411.1507812500004 137.490234375 1427.1175781250004 135.87890625Q1448.6507812500004 133.388671875 1457.1468750000004 131.484375Q1465.6429687500004 129.580078125 1465.6429687500004 121.669921875V120.498046875Q1465.6429687500004 110.537109375 1458.0990234375004 104.23828125Q1450.5550781250004 97.939453125 1437.3714843750004 97.939453125Q1423.8949218750004 97.939453125 1415.4720703125004 104.23828125Q1407.0492187500004 110.537109375 1406.3167968750004 120.3515625H1370.7210937500004Q1372.0394531250004 97.353515625 1389.9105468750004 83.291015625Q1407.7816406250004 69.228515625 1438.1039062500004 69.228515625Q1468.2796875000004 69.228515625 1485.2718750000004 83.291015625Q1502.2640625000004 97.353515625 1502.2640625000004 121.5234375V226.9921875H1465.9359375000004V205.166015625H1465.3500000000004Q1459.7835937500004 215.419921875 1449.2367187500004 222.451171875Q1438.6898437500004 229.482421875 1419.7933593750004 229.482421875ZM1428.8753906250004 202.08984375Q1447.0394531250004 202.08984375 1456.4144531250004 192.6416015625Q1465.7894531250004 183.193359375 1465.7894531250004 169.716796875V153.017578125Q1462.4203125000004 155.21484375 1452.7523437500004 157.0458984375Q1443.0843750000004 158.876953125 1431.6585937500004 160.634765625Q1419.7933593750004 162.392578125 1411.0775390625004 167.2998046875Q1402.3617187500004 172.20703125 1402.3617187500004 182.75390625Q1402.3617187500004 191.8359375 1409.5394531250004 196.962890625Q1416.7171875000004 202.08984375 1428.8753906250004 202.08984375ZM1565.2441406250002 139.541015625V226.9921875H1528.3300781250002V72.3046875H1564.6582031250002V96.03515625Q1580.7714843750002 69.228515625 1612.1191406250002 69.228515625Q1636.4355468750002 69.228515625 1651.8896484375002 84.90234375Q1667.3437500000002 100.576171875 1667.3437500000002 130.3125V226.9921875H1630.2832031250002V136.171875Q1630.2832031250002 119.1796875 1622.0800781250002 110.390625Q1613.8769531250002 101.6015625 1599.0820312500002 101.6015625Q1584.5800781250002 101.6015625 1574.9121093750002 110.68359375Q1565.2441406250002 119.765625 1565.2441406250002 139.541015625Z"/></svg></div></div>
+</footer>
+
+<div class="mobile-cta" aria-hidden="true">
+  <span><b>MCP Production</b><small>Opening soon</small></span>
+  <a class="btn btn-primary btn-small" tabindex="-1" href="/mcp-2026-migration/#get-the-cheatsheet">Get notified <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9.2M8.6 3.8 12.8 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+
+<script>
+(function () {
+  var h = document.querySelector('.site-header');
+  var onScroll = function () { h.classList.toggle('scrolled', window.scrollY > 8); };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  var btn = h.querySelector('.menu-btn');
+  var setMenu = function (open) {
+    h.classList.toggle('menu-open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.documentElement.classList.toggle('menu-lock', open);
+  };
+  btn.addEventListener('click', function () { setMenu(!h.classList.contains('menu-open')); });
+  h.querySelectorAll('.nav a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+  window.matchMedia('(min-width: 761px)').addEventListener('change', function (m) { if (m.matches) setMenu(false); });
+
+  // The phone's sticky call to action shows once the hero is out of view,
+  // and steps aside while the footer is on screen.
+  var bar = document.querySelector('.mobile-cta'), hero = document.querySelector('.hero'), foot = document.querySelector('.site-footer');
+  if (bar && hero && 'IntersectionObserver' in window) {
+    var past = false, atFoot = false;
+    var sync = function () { bar.classList.toggle('show', past && !atFoot); };
+    new IntersectionObserver(function (es) { past = !es[0].isIntersecting; sync(); }).observe(hero);
+    new IntersectionObserver(function (es) { atFoot = es[0].isIntersecting; sync(); }).observe(foot);
+  }
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal, .replay');
+  if (!('IntersectionObserver' in window) || reduce) {
+    els.forEach(function (e) { e.classList.add('in', 'run'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in', 'run'); io.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (e) { io.observe(e); });
+  }
+
+  var toc = document.querySelectorAll('.toc a');
+  if (toc.length && 'IntersectionObserver' in window) {
+    var map = {};
+    toc.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          toc.forEach(function (a) { a.classList.remove('active'); });
+          var a = map[en.target.id]; if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    Object.keys(map).forEach(function (id) { var s = document.getElementById(id); if (s) spy.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>

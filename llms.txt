@@ -1,0 +1,12 @@
+# Runs Clean
+
+> Engineering courses on the production layer of AI infrastructure. Verified against code that runs.
+
+## Courses
+- [MCP Production: Build and Operate Reliable Servers](https://runsclean.com/courses/mcp-production/): Build and secure MCP servers in Python, with labs on auth, caching, security and deployment. Covers revision 2026-07-28.
+
+## Free guides
+- [MCP 2026-07-28 migration: what breaks in a 2025-11-25 server](https://runsclean.com/mcp-2026-migration/): The MCP 2026-07-28 revision drops the handshake, sessions and server callbacks. What breaks in a 2025-11-25 server, what replaces it, and the error codes.
+
+## About
+- [How the courses are made](https://runsclean.com/about/)

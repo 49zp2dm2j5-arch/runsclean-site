@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /files/
+Disallow: /mcp-2026-migration/thanks/
+
+Sitemap: https://runsclean.com/sitemap.xml
