@@ -8,5 +8,14 @@
 ## Free guides
 - [MCP 2026-07-28 migration: what breaks in a 2025-11-25 server](https://runsclean.com/mcp-2026-migration/): The MCP 2026-07-28 revision drops the handshake, sessions and server callbacks. What breaks in a 2025-11-25 server, what replaces it, and the error codes.
 
+## Free sheets
+- [Your MCP server fails on one replica. Start with the request.](https://runsclean.com/sheets/mcp-replica-request-diagnosis/): Same MCP tool call, two replicas, two answers. A free sheet for telling what the request carries apart from what one process remembered.
+- [One MCP request, field by field.](https://runsclean.com/sheets/mcp-request-anatomy/): Every field in one MCP 2026-07-28 request, from the Mcp-Method and Mcp-Name headers to _meta, with what each one proves and what it doesn't.
+- [Was it the transport, the protocol or the tool?](https://runsclean.com/sheets/mcp-error-triage/): A rejected MCP call, sorted from the response alone: HTTP status, JSON-RPC codes like -32020 and -32602, or a tool result with isError set.
+- [Your MCP tool timed out. Did the write happen?](https://runsclean.com/sheets/mcp-tool-timeout-diagnosis/): A timeout tells you about the wait, not the write. What each observation proves, and why the JSON-RPC id can't stand in for an idempotency key.
+- [The tool answered. The approval never came.](https://runsclean.com/sheets/mcp-approval-diagnosis/): The tool answered and nothing happened. Tell input_required from a failure, and check caller, subject, expiry and replay before anything commits.
+- [Health check green, MCP tool still failing.](https://runsclean.com/sheets/mcp-health-check-incident/): Liveness 200, readiness 200, and the tool call still fails. The incident sheet that separates a delivered tool error from a replica that is down.
+- [What MCP 2026-07-28 breaks, and what's only deprecated.](https://runsclean.com/sheets/mcp-2026-07-28-revision-impact/): What the stateless MCP 2026-07-28 revision breaks in a 2025-11-25 server, what is only deprecated, and the first thing to inspect for each.
+
 ## About
 - [How the courses are made](https://runsclean.com/about/)
