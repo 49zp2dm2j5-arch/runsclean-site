@@ -3,7 +3,7 @@
 > Engineering courses on the production layer of AI infrastructure. Verified against code that runs.
 
 ## Courses
-- [MCP Production: Build and Operate Reliable Servers](https://runsclean.com/courses/mcp-production/): Build and secure MCP servers in Python, with labs on auth, caching, security and deployment. Covers revision 2026-07-28.
+- [MCP Production: Secure, Scalable MCP Servers in Python](https://runsclean.com/courses/mcp-production/): Model Context Protocol servers that survive retries, replicas, OAuth and gateways. Built on the 2026 spec, in 14 labs.
 
 ## Free guides
 - [MCP 2026-07-28 migration: what breaks in a 2025-11-25 server](https://runsclean.com/mcp-2026-migration/): The MCP 2026-07-28 revision drops the handshake, sessions and server callbacks. What breaks in a 2025-11-25 server, what replaces it, and the error codes.
